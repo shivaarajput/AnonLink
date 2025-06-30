@@ -1,4 +1,3 @@
-
 'use client';
 
 import Link from 'next/link';
@@ -12,7 +11,6 @@ import { ThemeToggle } from './ThemeToggle';
 const navLinks = [
   { href: '/', label: 'Home' },
   { href: '/dashboard', label: 'Dashboard' },
-  { href: '/admin/login', label: 'Admin Login' },
 ];
 
 export default function Header() {
