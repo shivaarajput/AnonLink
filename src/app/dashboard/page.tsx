@@ -238,12 +238,12 @@ export default function DashboardPage() {
       </CardHeader>
       <CardContent className="p-0 sm:p-2">
         <div className="rounded-md border">
-          <Table className="table-fixed w-full">
+          <Table className="w-full table-fixed">
             <TableHeader>
               <TableRow>
                 <TableHead className="w-[50px]"></TableHead>
-                <TableHead>Short Link</TableHead>
-                <TableHead className="hidden xl:table-cell">Original URL</TableHead>
+                <TableHead className="w-full">Short Link</TableHead>
+                <TableHead className="hidden xl:table-cell w-full">Original URL</TableHead>
                 <TableHead className="w-20 text-center">Clicks</TableHead>
                 {isAdmin && <TableHead className="hidden md:table-cell w-40">Creator Token</TableHead>}
                 <TableHead className="hidden sm:table-cell w-28 text-center">Created</TableHead>
