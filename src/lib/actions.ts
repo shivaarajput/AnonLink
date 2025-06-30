@@ -14,7 +14,7 @@ import {
   QueryConstraint,
 } from 'firebase/firestore';
 import { db } from './firebase';
-import { LinkData, LinkWithAnalytics, Visit } from './types';
+import { LinkData, Visit } from './types';
 import { revalidatePath } from 'next/cache';
 
 function getFirebaseErrorMessage(error: unknown): string {
@@ -88,9 +88,9 @@ export async function createShortLink(
   }
 }
 
-export async function logVisit(shortId: string, visitorFingerprint: string, visitorData: any): Promise<{ success: boolean; error?: string }> {
+export async function logVisit(shortId: string, visitorData: any): Promise<{ success: boolean; error?: string }> {
     try {
-        if(!shortId || !visitorFingerprint) return { success: false, error: 'Missing data' };
+        if(!shortId) return { success: false, error: 'Missing data' };
         
         const linksQuery = query(collection(db, 'links'), where('shortId', '==', shortId));
         const linkDocs = await getDocs(linksQuery);
@@ -102,18 +102,15 @@ export async function logVisit(shortId: string, visitorFingerprint: string, visi
 
         const visitData: Omit<Visit, 'id'> = {
             shortId,
-            visitorFingerprint,
             visitedAt: Date.now(),
             visitorData,
         };
 
         const batch = writeBatch(db);
         
-        // Add the new visit record
         const newVisitRef = doc(collection(db, 'analytics'));
         batch.set(newVisitRef, visitData);
         
-        // Atomically increment the click count on the link document
         batch.update(linkDocRef, { clicks: increment(1) });
         
         await batch.commit();
@@ -144,12 +141,10 @@ export async function getLinksByToken(anonymousToken: string): Promise<LinkData[
 
     try {
         const linksRef = collection(db, 'links');
-        // Remove order by to avoid needing a composite index, which is likely the issue for anonymous users.
         const q = query(linksRef, where('anonymousToken', '==', anonymousToken));
         const querySnapshot = await getDocs(q);
         const links = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as LinkData));
 
-        // Sort on the client-side instead
         links.sort((a, b) => b.createdAt - a.createdAt);
 
         return links;
@@ -176,19 +171,22 @@ export async function getAllLinksAdmin(): Promise<LinkData[]> {
 export async function getLinkAnalytics(shortId: string, anonymousToken?: string): Promise<{ link: LinkData | null, visits: Visit[] }> {
     try {
         const linksRef = collection(db, 'links');
-        const constraints: QueryConstraint[] = [where('shortId', '==', shortId)];
-        if (anonymousToken) {
-            constraints.push(where('anonymousToken', '==', anonymousToken));
-        }
-        const linkQuery = query(linksRef, ...constraints);
-
+        const linkQuery = query(linksRef, where('shortId', '==', shortId));
         const linkSnapshot = await getDocs(linkQuery);
 
         if (linkSnapshot.empty) {
             return { link: null, visits: [] };
         }
 
-        const link = { id: linkSnapshot.docs[0].id, ...linkSnapshot.docs[0].data() } as LinkData;
+        const linkDoc = linkSnapshot.docs[0];
+        const linkData = { id: linkDoc.id, ...linkDoc.data() } as LinkData;
+
+        // If an anonymous token is provided (meaning it's not an admin),
+        // verify it matches the link's token for security.
+        if (anonymousToken && linkData.anonymousToken !== anonymousToken) {
+            console.warn(`Permission denied: token mismatch for shortId ${shortId}. Access denied.`);
+            return { link: null, visits: [] };
+        }
         
         const visits: Visit[] = [];
         const visitsQuery = query(collection(db, 'analytics'), where('shortId', '==', shortId), orderBy('visitedAt', 'desc'));
@@ -197,7 +195,7 @@ export async function getLinkAnalytics(shortId: string, anonymousToken?: string)
             visits.push({ id: doc.id, ...doc.data() } as Visit);
         });
 
-        return { link, visits };
+        return { link: linkData, visits };
     } catch (error) {
         console.error(`Error fetching analytics for ${shortId}:`, error);
         return { link: null, visits: [] };
