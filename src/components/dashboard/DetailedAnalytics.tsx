@@ -36,11 +36,11 @@ export function DetailedAnalytics({ link, visits }: DetailedAnalyticsProps) {
                 <Table className="table-fixed w-full">
                     <TableHeader>
                         <TableRow>
-                            <TableHead className="w-[40px] px-2"></TableHead>
-                            <TableHead className="px-2 w-[110px]">Visited At</TableHead>
-                            <TableHead className="px-2 w-[120px] sm:w-[200px]">IP Address</TableHead>
-                            <TableHead className="px-2 w-[100px]">Country</TableHead>
-                            <TableHead className="px-2 w-full">Browser & OS</TableHead>
+                            <TableHead className="w-[5%] px-2"></TableHead>
+                            <TableHead className="px-2 w-[15%]">Visited At</TableHead>
+                            <TableHead className="px-2 w-[30%]">IP Address</TableHead>
+                            <TableHead className="px-2 w-[15%]">Country</TableHead>
+                            <TableHead className="px-2 w-[35%]">Browser & OS</TableHead>
                         </TableRow>
                     </TableHeader>
                     {visits.length > 0 ? (
