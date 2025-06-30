@@ -3,12 +3,19 @@
 
 import { useEffect, useState, useMemo } from 'react';
 import { User, onAuthStateChanged, signOut } from 'firebase/auth';
-import { auth } from '@/lib/firebase';
+import { auth, db } from '@/lib/firebase';
 import { checkIsAdmin } from '@/lib/auth';
-import { getLinksByToken, getAllLinksAdmin, getLinkAnalytics } from '@/lib/actions';
+import { getLinkAnalytics } from '@/lib/actions';
 import { getAnonymousToken } from '@/lib/store';
 import { LinkData, Visit } from '@/lib/types';
 import { useRouter } from 'next/navigation';
+import {
+  collection,
+  query,
+  where,
+  orderBy,
+  onSnapshot,
+} from 'firebase/firestore';
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
@@ -60,25 +67,43 @@ export default function DashboardPage() {
   useEffect(() => {
     if (authLoading) return;
 
-    const fetchLinks = async () => {
-      setLinksLoading(true);
-      if (isAdmin) {
-        const allLinks = await getAllLinksAdmin();
-        setLinks(allLinks);
-      } else {
-        const token = getAnonymousToken();
-        if (token) {
-          const userLinks = await getLinksByToken(token);
-          setLinks(userLinks);
-        } else {
-          setLinks([]);
-        }
-      }
-      setLinksLoading(false);
-    };
+    setLinksLoading(true);
 
-    fetchLinks();
-  }, [isAdmin, authLoading]);
+    let linksQuery;
+    if (isAdmin) {
+      linksQuery = query(collection(db, 'links'), orderBy('createdAt', 'desc'));
+    } else {
+      const token = getAnonymousToken();
+      if (token) {
+        linksQuery = query(collection(db, 'links'), where('anonymousToken', '==', token));
+      } else {
+        setLinks([]);
+        setLinksLoading(false);
+        return;
+      }
+    }
+
+    const unsubscribe = onSnapshot(linksQuery, (querySnapshot) => {
+      const linksData = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as LinkData));
+      
+      if (!isAdmin) {
+          linksData.sort((a, b) => b.createdAt - a.createdAt);
+      }
+      
+      setLinks(linksData);
+      setLinksLoading(false);
+    }, (error) => {
+        console.error("Error fetching real-time links:", error);
+        toast({
+            title: "Error Fetching Links",
+            description: "Could not retrieve link data in real-time.",
+            variant: "destructive"
+        });
+        setLinksLoading(false);
+    });
+
+    return () => unsubscribe();
+  }, [isAdmin, authLoading, toast]);
 
   const handleToggleExpand = async (shortId: string, docId: string) => {
     if (expandedLink?.id === docId) {
