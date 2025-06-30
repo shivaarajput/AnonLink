@@ -28,19 +28,19 @@ export function DetailedAnalytics({ link, visits }: DetailedAnalyticsProps) {
     }
 
     return (
-        <div className="p-4 bg-muted/30">
-            <h3 className="text-base font-semibold flex items-center gap-2 mb-4">
+        <div className="p-2 bg-muted/30">
+            <h3 className="text-base font-semibold flex items-center gap-2 mb-2">
                 <Globe className="h-5 w-5 text-primary" /> Visitor Details ({visits.length} clicks)
             </h3>
             <div className="rounded-md border bg-card">
-                <Table className="table-fixed">
+                <Table>
                     <TableHeader>
                         <TableRow>
-                            <TableHead className="w-[50px]"></TableHead>
-                            <TableHead className="w-[150px]">Visited At</TableHead>
-                            <TableHead className="w-[130px]">IP Address</TableHead>
-                            <TableHead className="w-[120px]">Country</TableHead>
-                            <TableHead>Browser & OS</TableHead>
+                            <TableHead className="w-[40px] px-2"></TableHead>
+                            <TableHead className="px-2">Visited At</TableHead>
+                            <TableHead className="px-2">IP Address</TableHead>
+                            <TableHead className="px-2">Country</TableHead>
+                            <TableHead className="px-2">Browser & OS</TableHead>
                         </TableRow>
                     </TableHeader>
                     {visits.length > 0 ? (
@@ -49,16 +49,16 @@ export function DetailedAnalytics({ link, visits }: DetailedAnalyticsProps) {
                                 <TableBody>
                                     <CollapsibleTrigger asChild>
                                         <TableRow className="cursor-pointer group hover:bg-muted/50 data-[state=open]:bg-muted/50">
-                                            <TableCell>
+                                            <TableCell className="p-2 pl-4">
                                                 <ChevronDown className="h-4 w-4 transition-transform duration-200 group-data-[state=open]:rotate-180" />
                                             </TableCell>
-                                            <TableCell>
+                                            <TableCell className="p-2 align-top">
                                                 <div>{format(new Date(visit.visitedAt), 'MMM d, yyyy')}</div>
                                                 <div className="text-xs text-muted-foreground">{format(new Date(visit.visitedAt), 'h:mm a')}</div>
                                             </TableCell>
-                                            <TableCell><code className="block break-all">{getVisitorPrimaryInfo(visit).ip}</code></TableCell>
-                                            <TableCell>{getVisitorPrimaryInfo(visit).country}</TableCell>
-                                            <TableCell>{getVisitorPrimaryInfo(visit).browser} on {getVisitorPrimaryInfo(visit).os}</TableCell>
+                                            <TableCell className="p-2"><code className="block break-all">{getVisitorPrimaryInfo(visit).ip}</code></TableCell>
+                                            <TableCell className="p-2">{getVisitorPrimaryInfo(visit).country}</TableCell>
+                                            <TableCell className="p-2 break-words">{getVisitorPrimaryInfo(visit).browser} on {getVisitorPrimaryInfo(visit).os}</TableCell>
                                         </TableRow>
                                     </CollapsibleTrigger>
                                     <CollapsibleContent asChild>

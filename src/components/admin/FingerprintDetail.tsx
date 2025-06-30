@@ -87,16 +87,16 @@ export const FingerprintDetail = ({ data }: { data: any }) => {
     ].filter(section => section.data && Object.keys(section.data).length > 0);
 
     return (
-        <div className="grid grid-cols-1 xl:grid-cols-2 gap-4 p-4 bg-muted/20">
+        <div className="grid grid-cols-1 xl:grid-cols-2 gap-2 p-2 bg-muted/20">
             {sections.map(section => (
                  <Card key={section.title} className="flex flex-col bg-card/50 shadow-sm">
-                    <CardHeader className="py-3 px-4 border-b">
+                    <CardHeader className="py-2 px-3 border-b">
                         <CardTitle className="text-base font-semibold">{section.title}</CardTitle>
                     </CardHeader>
                     <CardContent className="flex-grow text-xs p-0">
                         <div className="divide-y divide-border">
                             {Object.entries(section.data).map(([key, value]) => (
-                                <div key={key} className="flex flex-col md:flex-row md:items-start py-3 px-4 hover:bg-muted/30">
+                                <div key={key} className="flex flex-col md:flex-row md:items-start p-2 hover:bg-muted/30">
                                     <div className="font-medium w-full md:w-1/3 capitalize align-top shrink-0 text-foreground/80">
                                         {key.replace(/([A-Z])/g, ' $1')}
                                     </div>

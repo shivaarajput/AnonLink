@@ -75,7 +75,7 @@ export function AnalyticsModal({ shortId }: { shortId: string }) {
                                     </div>
                                 </AccordionTrigger>
                                 <AccordionContent>
-                                    <div className="mb-4 space-y-2 text-sm px-4">
+                                    <div className="mb-4 space-y-2 text-sm px-2">
                                         <div><strong>Original URL:</strong> <a href={analytics.link.longUrl} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline break-all">{analytics.link.longUrl}</a></div>
                                         <div><strong>Creator Fingerprint Hash:</strong> <code className="text-xs bg-muted p-1 rounded break-all">{analytics.link.creatorFingerprint}</code></div>
                                     </div>
@@ -90,14 +90,14 @@ export function AnalyticsModal({ shortId }: { shortId: string }) {
                                 </AccordionTrigger>
                                 <AccordionContent>
                                     <div className="rounded-md border">
-                                        <Table className="table-fixed">
+                                        <Table>
                                             <TableHeader>
                                                 <TableRow>
-                                                    <TableHead className="w-[50px]"></TableHead>
-                                                    <TableHead className="w-[150px]">Visited At</TableHead>
-                                                    <TableHead className="w-[130px]">IP Address</TableHead>
-                                                    <TableHead className="w-[120px]">Country</TableHead>
-                                                    <TableHead>Browser & OS</TableHead>
+                                                    <TableHead className="w-[40px] px-2"></TableHead>
+                                                    <TableHead className="px-2">Visited At</TableHead>
+                                                    <TableHead className="px-2">IP Address</TableHead>
+                                                    <TableHead className="px-2">Country</TableHead>
+                                                    <TableHead className="px-2">Browser & OS</TableHead>
                                                 </TableRow>
                                             </TableHeader>
                                             {analytics.visits.length > 0 ? analytics.visits.map(visit => (
@@ -105,16 +105,16 @@ export function AnalyticsModal({ shortId }: { shortId: string }) {
                                                     <TableBody>
                                                         <CollapsibleTrigger asChild className="group">
                                                             <TableRow className="cursor-pointer">
-                                                                <TableCell>
+                                                                <TableCell className="p-2 pl-4">
                                                                     <ChevronDown className="h-4 w-4 transition-transform duration-200 group-data-[state=open]:rotate-180" />
                                                                 </TableCell>
-                                                                <TableCell>
+                                                                <TableCell className="p-2 align-top">
                                                                     <div>{format(new Date(visit.visitedAt), 'MMM d, yyyy')}</div>
                                                                     <div className="text-xs text-muted-foreground">{format(new Date(visit.visitedAt), 'h:mm a')}</div>
                                                                 </TableCell>
-                                                                <TableCell><code className="block break-all">{getVisitorPrimaryInfo(visit).ip}</code></TableCell>
-                                                                <TableCell>{getVisitorPrimaryInfo(visit).country}</TableCell>
-                                                                <TableCell>{getVisitorPrimaryInfo(visit).browser} on {getVisitorPrimaryInfo(visit).os}</TableCell>
+                                                                <TableCell className="p-2"><code className="block break-all">{getVisitorPrimaryInfo(visit).ip}</code></TableCell>
+                                                                <TableCell className="p-2">{getVisitorPrimaryInfo(visit).country}</TableCell>
+                                                                <TableCell className="p-2 break-words">{getVisitorPrimaryInfo(visit).browser} on {getVisitorPrimaryInfo(visit).os}</TableCell>
                                                             </TableRow>
                                                         </CollapsibleTrigger>
                                                         <CollapsibleContent asChild>
