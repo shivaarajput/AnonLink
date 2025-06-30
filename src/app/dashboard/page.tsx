@@ -7,7 +7,7 @@ import { auth } from '@/lib/firebase';
 import { checkIsAdmin } from '@/lib/auth';
 import { getLinksByToken, getAllLinksAdmin, getLinkAnalytics } from '@/lib/actions';
 import { getAnonymousToken } from '@/lib/store';
-import { LinkWithAnalytics, LinkData, Visit } from '@/lib/types';
+import { LinkData, Visit } from '@/lib/types';
 import { useRouter } from 'next/navigation';
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -31,7 +31,7 @@ export default function DashboardPage() {
   const [isAdmin, setIsAdmin] = useState(false);
   const [authLoading, setAuthLoading] = useState(true);
   
-  const [links, setLinks] = useState<LinkWithAnalytics[]>([]);
+  const [links, setLinks] = useState<LinkData[]>([]);
   const [linksLoading, setLinksLoading] = useState(true);
   const [expandedLink, setExpandedLink] = useState<ExpandedLinkState | null>(null);
 
@@ -70,6 +70,8 @@ export default function DashboardPage() {
         if (token) {
           const userLinks = await getLinksByToken(token);
           setLinks(userLinks);
+        } else {
+          setLinks([]);
         }
       }
       setLinksLoading(false);

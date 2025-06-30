@@ -7,6 +7,7 @@ export interface LinkData {
   creatorFingerprint: string;
   creatorFingerprintData?: any;
   createdAt: number;
+  clicks: number;
 }
 
 export interface Visit {
@@ -18,6 +19,5 @@ export interface Visit {
 }
 
 export interface LinkWithAnalytics extends LinkData {
-  clicks: number;
   visits?: Visit[];
 }

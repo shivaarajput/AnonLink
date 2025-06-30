@@ -7,8 +7,10 @@ import {
   query,
   where,
   getDocs,
-  getCountFromServer,
   orderBy,
+  doc,
+  increment,
+  writeBatch,
 } from 'firebase/firestore';
 import { db } from './firebase';
 import { LinkData, LinkWithAnalytics, Visit } from './types';
@@ -77,6 +79,7 @@ export async function createShortLink(
       creatorFingerprint,
       creatorFingerprintData,
       createdAt: Date.now(),
+      clicks: 0,
     };
 
     await addDoc(collection(db, 'links'), newLink);
@@ -92,6 +95,14 @@ export async function logVisit(shortId: string, visitorFingerprint: string, visi
     try {
         if(!shortId || !visitorFingerprint) return { success: false, error: 'Missing data' };
         
+        const linksQuery = query(collection(db, 'links'), where('shortId', '==', shortId));
+        const linkDocs = await getDocs(linksQuery);
+
+        if (linkDocs.empty) {
+            return { success: false, error: `Could not find link with shortId: ${shortId}` };
+        }
+        const linkDocRef = linkDocs.docs[0].ref;
+
         const visitData: Omit<Visit, 'id'> = {
             shortId,
             visitorFingerprint,
@@ -99,7 +110,17 @@ export async function logVisit(shortId: string, visitorFingerprint: string, visi
             visitorData,
         };
 
-        await addDoc(collection(db, 'analytics'), visitData);
+        const batch = writeBatch(db);
+        
+        // Add the new visit record
+        const newVisitRef = doc(collection(db, 'analytics'));
+        batch.set(newVisitRef, visitData);
+        
+        // Atomically increment the click count on the link document
+        batch.update(linkDocRef, { clicks: increment(1) });
+        
+        await batch.commit();
+        
         return { success: true };
     } catch (error) {
         console.error('Error logging visit:', error);
@@ -121,7 +142,7 @@ export async function getLongUrl(shortId: string): Promise<string | null> {
     }
 }
 
-export async function getLinksByToken(anonymousToken: string): Promise<LinkWithAnalytics[]> {
+export async function getLinksByToken(anonymousToken: string): Promise<LinkData[]> {
     if (!anonymousToken) return [];
 
     try {
@@ -129,18 +150,7 @@ export async function getLinksByToken(anonymousToken: string): Promise<LinkWithA
         const q = query(linksRef, where('anonymousToken', '==', anonymousToken), orderBy('createdAt', 'desc'));
 
         const querySnapshot = await getDocs(q);
-        const links: LinkWithAnalytics[] = [];
-
-        for (const doc of querySnapshot.docs) {
-            const linkData = { id: doc.id, ...doc.data() } as LinkData;
-            
-            const analyticsRef = collection(db, 'analytics');
-            const analyticsQuery = query(analyticsRef, where('shortId', '==', linkData.shortId));
-            const clicksSnapshot = await getCountFromServer(analyticsQuery);
-            const clicks = clicksSnapshot.data().count;
-
-            links.push({ ...linkData, clicks });
-        }
+        const links = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as LinkData));
 
         return links;
     } catch (error) {
@@ -149,23 +159,12 @@ export async function getLinksByToken(anonymousToken: string): Promise<LinkWithA
     }
 }
 
-export async function getAllLinksAdmin(): Promise<LinkWithAnalytics[]> {
+export async function getAllLinksAdmin(): Promise<LinkData[]> {
     try {
         const linksRef = collection(db, 'links');
         const q = query(linksRef, orderBy('createdAt', 'desc'));
         const querySnapshot = await getDocs(q);
-        const links: LinkWithAnalytics[] = [];
-
-        for (const doc of querySnapshot.docs) {
-            const linkData = { id: doc.id, ...doc.data() } as LinkData;
-
-            const analyticsRef = collection(db, 'analytics');
-            const analyticsQuery = query(analyticsRef, where('shortId', '==', linkData.shortId));
-            const clicksSnapshot = await getCountFromServer(analyticsQuery);
-            const clicks = clicksSnapshot.data().count;
-
-            links.push({ ...linkData, clicks });
-        }
+        const links = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as LinkData));
         
         return links;
     } catch(error) {
