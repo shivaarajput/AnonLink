@@ -1,8 +1,8 @@
 'use client';
 
-// A comprehensive client-side fingerprinting utility.
+// A comprehensive client-side fingerprinting utility, as per the detailed request.
 
-// Helper function to safely get a value
+// Helper function to safely get a value, handling errors gracefully.
 const safeGet = async <T>(getter: () => T | Promise<T>): Promise<T | string> => {
   try {
     const value = await getter();
@@ -15,7 +15,7 @@ const safeGet = async <T>(getter: () => T | Promise<T>): Promise<T | string> => 
   }
 };
 
-// 1. Core Hardware
+// Category 1: Core Hardware & Performance
 const getHardwareData = async () => {
   const getGpu = () => {
     const canvas = document.createElement('canvas');
@@ -26,6 +26,8 @@ const getHardwareData = async () => {
     return {
       vendor: gl.getParameter(debugInfo.UNMASKED_VENDOR_WEBGL),
       renderer: gl.getParameter(debugInfo.UNMASKED_RENDERER_WEBGL),
+      version: gl.getParameter(gl.VERSION),
+      supportedExtensions: gl.getSupportedExtensions(),
     };
   };
 
@@ -37,23 +39,13 @@ const getHardwareData = async () => {
       charging: battery.charging,
     };
   };
-
-  return {
-    gpu: await safeGet(getGpu),
-    cpuCores: await safeGet(() => navigator.hardwareConcurrency),
-    deviceMemory: await safeGet(() => (navigator as any).deviceMemory || 'N/A'),
-    battery: await safeGet(getBattery),
-  };
-};
-
-// 2. Rendering Signatures
-const getRenderingData = async () => {
+  
   const getCanvasFingerprint = () => {
     const canvas = document.createElement('canvas');
     const ctx = canvas.getContext('2d');
     if (!ctx) return 'Canvas not supported';
 
-    const text = "abcdefghijklmnopqrstuvwxyz0123456789";
+    const text = "AnonLink_Fingerprint_ID_1.2.3-4567-890_!@#$%^&*()";
     ctx.textBaseline = 'top';
     ctx.font = "14px 'Arial'";
     ctx.textBaseline = 'alphabetic';
@@ -67,7 +59,7 @@ const getRenderingData = async () => {
     return canvas.toDataURL();
   };
   
-  const getAudioFingerprint = () => new Promise((resolve, reject) => {
+  const getAudioFingerprint = () => new Promise((resolve) => {
     try {
         const AudioContext = window.OfflineAudioContext || (window as any).webkitOfflineAudioContext;
         if (!AudioContext) return resolve('AudioContext not supported');
@@ -91,10 +83,12 @@ const getRenderingData = async () => {
         oscillator.start(0);
 
         context.startRendering();
-        context.oncomplete = (event) => {
-            const sum = (event as any).renderedBuffer.getChannelData(0).reduce((acc: any, val: any) => acc + Math.abs(val), 0);
+        context.oncomplete = (event: OfflineAudioCompletionEvent) => {
+            const buffer = event.renderedBuffer;
+            const sum = buffer.getChannelData(0).reduce((acc: number, val: number) => acc + Math.abs(val), 0);
             resolve(sum.toString());
         };
+        setTimeout(() => resolve('AudioContext timeout'), 500); // Failsafe timeout
      } catch (error) {
          resolve('Error generating audio fingerprint');
      }
@@ -102,12 +96,16 @@ const getRenderingData = async () => {
 
 
   return {
-    canvas: await safeGet(getCanvasFingerprint),
-    audio: await safeGet(getAudioFingerprint),
+    gpu: await safeGet(getGpu),
+    cpuCores: await safeGet(() => navigator.hardwareConcurrency),
+    deviceMemory: await safeGet(() => (navigator as any).deviceMemory || 'N/A'),
+    battery: await safeGet(getBattery),
+    canvasSignature: await safeGet(getCanvasFingerprint),
+    audioSignature: await safeGet(getAudioFingerprint),
   };
 };
 
-// 3. Network Profile
+// Category 2: Network & Geolocation
 const getNetworkData = async () => {
   const getPublicIp = async () => {
     try {
@@ -120,6 +118,9 @@ const getNetworkData = async () => {
             region: data.region,
             country: data.country_name,
             isp: data.org,
+            vpn: data.security?.vpn || false,
+            proxy: data.security?.proxy || false,
+            tor: data.security?.tor || false,
         };
     } catch (error) {
         if (error instanceof Error) return `Error: ${error.message}`;
@@ -127,30 +128,43 @@ const getNetworkData = async () => {
     }
   };
 
-  const getLocalIp = () => new Promise((resolve) => {
+  const getLocalIp = () => new Promise<string>((resolve) => {
     const RTCPeerConnection = window.RTCPeerConnection || (window as any).mozRTCPeerConnection || (window as any).webkitRTCPeerConnection;
     if (!RTCPeerConnection) return resolve('WebRTC not supported');
     
-    // Set a timeout for the WebRTC connection
+    let resolved = false;
+    const conn = new RTCPeerConnection({ iceServers: [] });
     const timeout = setTimeout(() => {
-        resolve('Timeout');
+        if (!resolved) {
+            conn.close();
+            resolve('WebRTC Timeout');
+            resolved = true;
+        }
     }, 1000);
 
-    const conn = new RTCPeerConnection({ iceServers: [] });
     conn.createDataChannel('');
     conn.onicecandidate = (e) => {
-        if (!e.candidate) return;
+        if (resolved || !e || !e.candidate || !e.candidate.candidate) return;
         const ipRegex = /([0-9]{1,3}(\.[0-9]{1,3}){3}|[a-f0-9]{1,4}(:[a-f0-9]{1,4}){7})/;
-        const ip = ipRegex.exec(e.candidate.candidate)?.[1];
-        if (ip && ip.indexOf('192.168') === 0) { // Filter for local IPs
+        const ipMatch = ipRegex.exec(e.candidate.candidate);
+        if (ipMatch) {
             clearTimeout(timeout);
-            conn.onicecandidate = null;
-            resolve(ip);
+            conn.close();
+            if (!resolved) {
+              resolve(ipMatch[1]);
+              resolved = true;
+            }
         }
     };
     conn.createOffer()
       .then(offer => conn.setLocalDescription(offer))
-      .catch(() => resolve('Error creating offer'));
+      .catch(() => {
+          if(!resolved) {
+            conn.close();
+            resolve('Error creating WebRTC offer');
+            resolved = true;
+          }
+      });
   });
 
   return {
@@ -160,41 +174,51 @@ const getNetworkData = async () => {
 };
 
 
-// 4. Software Stack
+// Category 3: Browser & Software Environment
 const getSoftwareData = async () => {
-    return {
-        os: await safeGet(() => navigator.platform),
-        browser: await safeGet(() => navigator.userAgent),
-        languages: await safeGet(() => navigator.languages),
-        timezone: await safeGet(() => new Date().getTimezoneOffset()),
-        userAgent: await safeGet(() => navigator.userAgent),
-    };
-};
-
-// 5. Browser Configuration
-const getBrowserConfigData = async () => {
     const getPlugins = () => {
       if (!navigator.plugins) return 'N/A';
-      return Array.from(navigator.plugins).map(p => ({name: p.name, filename: p.filename}));
+      return Array.from(navigator.plugins).map(p => ({name: p.name, filename: p.filename, description: p.description}));
     };
     
     const getFonts = () => new Promise((resolve) => {
         const fontList = [
-            'Arial', 'Helvetica', 'Times New Roman', 'Times', 'Courier New', 'Courier',
-            'Verdana', 'Georgia', 'Palatino', 'Garamond', 'Bookman', 'Comic Sans MS',
-            'Trebuchet MS', 'Arial Black', 'Impact', 'Calibri', 'Cambria', 'Candara',
-            'Consolas', 'Constantia', 'Corbel', 'Segoe UI'
+            'Arial', 'Verdana', 'Helvetica', 'Times New Roman', 'Courier New', 'Georgia', 'Garamond', 
+            'Comic Sans MS', 'Trebuchet MS', 'Impact', 'Segoe UI', 'Calibri', 'Candara', 'Menlo'
         ];
         
         if (typeof (document as any).fonts?.check !== 'function') {
            return resolve('Font checking not supported');
         }
 
-        const availableFonts = fontList.filter(font => (document as any).fonts.check(`12px "${font}"`));
-        resolve(availableFonts);
+        try {
+            const availableFonts = fontList.filter(font => (document as any).fonts.check(`12px "${font}"`));
+            resolve(availableFonts);
+        } catch (e) {
+            resolve('Error checking fonts');
+        }
     });
 
     return {
+        os: await safeGet(() => (navigator as any).userAgentData?.platform || navigator.platform),
+        userAgent: await safeGet(() => navigator.userAgent),
+        browser: await safeGet(() => {
+            const ua = navigator.userAgent;
+            let tem, M = ua.match(/(opera|chrome|safari|firefox|msie|trident(?=\/))\/?\s*(\d+)/i) || [];
+            if(/trident/i.test(M[1])){
+                tem = /\brv[ :]+(\d+)/g.exec(ua) || [];
+                return 'IE '+(tem[1] || '');
+            }
+            if(M[1] === 'Chrome'){
+                tem = ua.match(/\b(OPR|Edge|Edg)\/(\d+)/);
+                if(tem != null) return tem.slice(1).join(' ').replace('OPR', 'Opera').replace('Edg', 'Edge');
+            }
+            M = M[2]? [M[1], M[2]]: [navigator.appName, navigator.appVersion, '-?'];
+            if((tem = ua.match(/version\/(\d+)/i))!= null) M.splice(1, 1, tem[1]);
+            return M.join(' ');
+        }),
+        languages: await safeGet(() => navigator.languages),
+        timezone: await safeGet(() => new Intl.DateTimeFormat().resolvedOptions().timeZone),
         plugins: await safeGet(getPlugins),
         fonts: await safeGet(getFonts),
         cookiesEnabled: await safeGet(() => navigator.cookieEnabled),
@@ -202,31 +226,47 @@ const getBrowserConfigData = async () => {
     };
 };
 
-// 6. Display
+// Category 4: Display & Media Devices
 const getDisplayData = async () => {
+    const getMediaDevices = async () => {
+        if (!navigator.mediaDevices || !navigator.mediaDevices.enumerateDevices) {
+            return 'MediaDevices API not supported';
+        }
+        try {
+            const devices = await navigator.mediaDevices.enumerateDevices();
+            return devices.map(d => ({ kind: d.kind, label: d.label ? 'yes' : 'no' })); // Don't expose full labels
+        } catch(e) {
+            return 'Could not enumerate devices';
+        }
+    };
+
     return {
         resolution: await safeGet(() => `${window.screen.width}x${window.screen.height}`),
         availableResolution: await safeGet(() => `${window.screen.availWidth}x${window.screen.availHeight}`),
+        windowSize: await safeGet(() => `${window.innerWidth}x${window.innerHeight}`),
         colorDepth: await safeGet(() => window.screen.colorDepth),
         pixelDepth: await safeGet(() => window.screen.pixelDepth),
+        orientation: await safeGet(() => window.screen.orientation?.type || 'N/A'),
+        mediaDevices: await safeGet(getMediaDevices),
     };
 };
 
+// Main function to assemble the fingerprint
 export const getFingerprint = async (): Promise<{ hash: string, data: any }> => {
+  // Prevent execution on the server
   if (typeof window === 'undefined' || typeof document === 'undefined') {
     return { hash: 'server', data: { type: 'server' } };
   }
 
   const data = {
     hardware: await getHardwareData(),
-    rendering: await getRenderingData(),
     network: await getNetworkData(),
     software: await getSoftwareData(),
-    config: await getBrowserConfigData(),
     display: await getDisplayData(),
   };
 
-  const jsonString = JSON.stringify(data);
+  // Create a stable JSON string for hashing
+  const jsonString = JSON.stringify(data, Object.keys(data).sort());
   const hashBuffer = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(jsonString));
   const hashArray = Array.from(new Uint8Array(hashBuffer));
   const hashHex = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
