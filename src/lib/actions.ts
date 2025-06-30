@@ -50,7 +50,8 @@ async function isShortIdUnique(shortId: string): Promise<boolean> {
 export async function createShortLink(
   longUrl: string,
   anonymousToken: string,
-  creatorFingerprint: string
+  creatorFingerprint: string,
+  creatorFingerprintData: any,
 ): Promise<{ shortId?: string; error?: string }> {
   try {
     if (!longUrl || !anonymousToken || !creatorFingerprint) {
@@ -75,6 +76,7 @@ export async function createShortLink(
       longUrl,
       anonymousToken,
       creatorFingerprint,
+      creatorFingerprintData,
       createdAt: Date.now(),
     };
 
@@ -107,7 +109,8 @@ export async function logVisit(shortId: string, visitorFingerprint: string, visi
             shortId,
             visitorFingerprint,
             visitedAt: Date.now(),
-            browser: getBrowser(visitorData.software?.browser),
+            visitorData,
+            browser: getBrowser(visitorData.software?.userAgent),
             os: visitorData.software?.os || 'Unknown',
             country: visitorData.network?.public?.country || 'Unknown',
             isp: visitorData.network?.public?.isp || 'Unknown',
