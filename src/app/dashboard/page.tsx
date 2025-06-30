@@ -85,7 +85,14 @@ export default function DashboardPage() {
       setExpandedLink(null);
     } else {
       setExpandedLink({ id: docId, data: null, loading: true });
-      const analyticsData = await getLinkAnalytics(shortId);
+      let analyticsData;
+      if (isAdmin) {
+          analyticsData = await getLinkAnalytics(shortId);
+      } else {
+          const token = getAnonymousToken();
+          analyticsData = await getLinkAnalytics(shortId, token);
+      }
+      
       if (analyticsData.link) {
         setExpandedLink({ id: docId, data: analyticsData, loading: false });
       } else {

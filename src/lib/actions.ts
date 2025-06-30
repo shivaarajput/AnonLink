@@ -11,6 +11,7 @@ import {
   doc,
   increment,
   writeBatch,
+  QueryConstraint,
 } from 'firebase/firestore';
 import { db } from './firebase';
 import { LinkData, LinkWithAnalytics, Visit } from './types';
@@ -172,9 +173,15 @@ export async function getAllLinksAdmin(): Promise<LinkData[]> {
     }
 }
 
-export async function getLinkAnalytics(shortId: string): Promise<{ link: LinkData | null, visits: Visit[] }> {
+export async function getLinkAnalytics(shortId: string, anonymousToken?: string): Promise<{ link: LinkData | null, visits: Visit[] }> {
     try {
-        const linkQuery = query(collection(db, 'links'), where('shortId', '==', shortId));
+        const linksRef = collection(db, 'links');
+        const constraints: QueryConstraint[] = [where('shortId', '==', shortId)];
+        if (anonymousToken) {
+            constraints.push(where('anonymousToken', '==', anonymousToken));
+        }
+        const linkQuery = query(linksRef, ...constraints);
+
         const linkSnapshot = await getDocs(linkQuery);
 
         if (linkSnapshot.empty) {
