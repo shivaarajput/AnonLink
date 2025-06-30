@@ -205,13 +205,13 @@ export default function DashboardPage() {
                             <TableCell>
                               <ChevronDown className="h-4 w-4 transition-transform duration-200 data-[state=open]:rotate-180" />
                             </TableCell>
-                            <TableCell className="font-medium">
+                            <TableCell className="font-medium max-w-[20ch] sm:max-w-[40ch] truncate">
                                 <a href={`/${link.shortId}`} onClick={(e) => e.stopPropagation()} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline flex items-center gap-1.5">
                                     {`${origin.replace(/https?:\/\//, '')}/${link.shortId}`}
                                     <ExternalLink className="h-3 w-3" />
                                 </a>
                             </TableCell>
-                            <TableCell className="hidden lg:table-cell truncate max-w-sm">{link.longUrl}</TableCell>
+                            <TableCell className="hidden lg:table-cell max-w-sm break-all">{link.longUrl}</TableCell>
                             <TableCell className="text-center font-semibold">{link.clicks}</TableCell>
                             {isAdmin && <TableCell className="hidden md:table-cell"><code className="text-xs bg-muted p-1 rounded">{link.anonymousToken.substring(0, 13)}...</code></TableCell>}
                             <TableCell className="hidden sm:table-cell text-center text-muted-foreground">{format(new Date(link.createdAt), 'MMM d, yyyy')}</TableCell>

@@ -55,7 +55,7 @@ export function DetailedAnalytics({ link, visits }: DetailedAnalyticsProps) {
                                             <TableCell>{format(new Date(visit.visitedAt), 'MMM d, yyyy, h:mm a')}</TableCell>
                                             <TableCell><code>{getVisitorPrimaryInfo(visit).ip}</code></TableCell>
                                             <TableCell>{getVisitorPrimaryInfo(visit).country}</TableCell>
-                                            <TableCell>{getVisitorPrimaryInfo(visit).browser} on {getVisitorPrimaryInfo(visit).os}</TableCell>
+                                            <TableCell className="max-w-[20ch] truncate">{getVisitorPrimaryInfo(visit).browser} on {getVisitorPrimaryInfo(visit).os}</TableCell>
                                         </TableRow>
                                     </CollapsibleTrigger>
                                     <CollapsibleContent asChild>

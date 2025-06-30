@@ -35,7 +35,7 @@ const DataRenderer = ({ data, level = 0 }: { data: any, level?: number }) => {
             );
         }
         
-        const isSimpleObject = Object.values(data).every(v => v === null || typeof v !== 'object' || Array.isArray(v));
+        const isSimpleObject = Object.values(data).every(v => v === null || typeof v !== 'object' || (Array.isArray(v) && v.every(item => typeof item !== 'object')));
 
         if (isSimpleObject) {
              return (
@@ -62,7 +62,7 @@ const DataRenderer = ({ data, level = 0 }: { data: any, level?: number }) => {
                     <TableBody>
                         {Object.entries(data).map(([key, value]) => (
                             <TableRow key={key} className="hover:bg-muted/30">
-                                <TableCell className="font-medium w-1/3 py-1 px-2 capitalize align-top">{key.replace(/([A-Z])/g, ' $1')}</TableCell>
+                                <TableCell className="font-medium py-1 px-2 capitalize align-top">{key.replace(/([A-Z])/g, ' $1')}</TableCell>
                                 <TableCell className="py-1 px-2"><DataRenderer data={value} level={level + 1} /></TableCell>
                             </TableRow>
                         ))}
@@ -103,7 +103,7 @@ export const FingerprintDetail = ({ data }: { data: any }) => {
                             <TableBody>
                                 {Object.entries(section.data).map(([key, value]) => (
                                     <TableRow key={key} className="hover:bg-muted/30">
-                                        <TableCell className="font-medium w-1/3 capitalize align-top py-2 px-4">
+                                        <TableCell className="font-medium w-2/5 md:w-1/3 capitalize align-top py-2 px-4">
                                             {key.replace(/([A-Z])/g, ' $1')}
                                         </TableCell>
                                         <TableCell className="py-2 px-4">
