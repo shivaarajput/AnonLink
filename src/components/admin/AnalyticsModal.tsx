@@ -49,12 +49,12 @@ export function AnalyticsModal({ shortId }: { shortId: string }) {
                     Details
                 </Button>
             </DialogTrigger>
-            <DialogContent className="max-w-6xl w-full">
-                <DialogHeader>
+            <DialogContent className="max-w-6xl w-full p-2 sm:p-4">
+                <DialogHeader className="px-2">
                     <DialogTitle>Analytics for /{shortId}</DialogTitle>
                     <DialogDescription>Detailed creator and visitor information for this link.</DialogDescription>
                 </DialogHeader>
-                <div className="max-h-[80vh] overflow-y-auto pr-6 -mr-6">
+                <div className="max-h-[80vh] overflow-y-auto pr-2 -mr-2">
                     {loading ? (
                          <div className="space-y-4 p-1">
                             <Skeleton className="h-10 w-full" />
@@ -90,13 +90,13 @@ export function AnalyticsModal({ shortId }: { shortId: string }) {
                                 </AccordionTrigger>
                                 <AccordionContent>
                                     <div className="rounded-md border">
-                                        <Table>
+                                        <Table className="table-fixed w-full">
                                             <TableHeader>
                                                 <TableRow>
                                                     <TableHead className="w-[40px] px-2"></TableHead>
-                                                    <TableHead className="px-2">Visited At</TableHead>
-                                                    <TableHead className="px-2">IP Address</TableHead>
-                                                    <TableHead className="px-2">Country</TableHead>
+                                                    <TableHead className="px-2 w-[110px]">Visited At</TableHead>
+                                                    <TableHead className="px-2 w-[120px] sm:w-[200px]">IP Address</TableHead>
+                                                    <TableHead className="px-2 w-[100px]">Country</TableHead>
                                                     <TableHead className="px-2">Browser & OS</TableHead>
                                                 </TableRow>
                                             </TableHeader>
@@ -108,13 +108,15 @@ export function AnalyticsModal({ shortId }: { shortId: string }) {
                                                                 <TableCell className="p-2 pl-4">
                                                                     <ChevronDown className="h-4 w-4 transition-transform duration-200 group-data-[state=open]:rotate-180" />
                                                                 </TableCell>
-                                                                <TableCell className="p-2 align-top">
+                                                                <TableCell className="p-2 align-top text-xs">
                                                                     <div>{format(new Date(visit.visitedAt), 'MMM d, yyyy')}</div>
-                                                                    <div className="text-xs text-muted-foreground">{format(new Date(visit.visitedAt), 'h:mm a')}</div>
+                                                                    <div className="text-muted-foreground">{format(new Date(visit.visitedAt), 'h:mm a')}</div>
                                                                 </TableCell>
-                                                                <TableCell className="p-2"><code className="block break-all">{getVisitorPrimaryInfo(visit).ip}</code></TableCell>
-                                                                <TableCell className="p-2">{getVisitorPrimaryInfo(visit).country}</TableCell>
-                                                                <TableCell className="p-2 break-words">{getVisitorPrimaryInfo(visit).browser} on {getVisitorPrimaryInfo(visit).os}</TableCell>
+                                                                <TableCell className="p-2"><code className="block break-all text-xs">{getVisitorPrimaryInfo(visit).ip}</code></TableCell>
+                                                                <TableCell className="p-2 text-xs">{getVisitorPrimaryInfo(visit).country}</TableCell>
+                                                                <TableCell className="p-2 text-xs truncate">
+                                                                    {getVisitorPrimaryInfo(visit).browser} on {getVisitorPrimaryInfo(visit).os}
+                                                                </TableCell>
                                                             </TableRow>
                                                         </CollapsibleTrigger>
                                                         <CollapsibleContent asChild>

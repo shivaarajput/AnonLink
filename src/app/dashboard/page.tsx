@@ -173,7 +173,7 @@ export default function DashboardPage() {
           </div>
         )}
       </CardHeader>
-      <CardContent>
+      <CardContent className="p-2 pt-0 sm:p-4 sm:pt-0">
         <div className="rounded-md border">
           <Table className="table-fixed">
             <TableHeader>
@@ -207,9 +207,9 @@ export default function DashboardPage() {
                             </TableCell>
                             <TableCell className="font-medium">
                                 <a href={`/${link.shortId}`} onClick={(e) => e.stopPropagation()} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline flex items-center gap-1.5">
-                                    <span className="truncate">
+                                    <div className="truncate">
                                         {`${origin.replace(/https?:\/\//, '')}/${link.shortId}`}
-                                    </span>
+                                    </div>
                                     <ExternalLink className="h-3 w-3 shrink-0" />
                                 </a>
                             </TableCell>
