@@ -1,3 +1,4 @@
+
 'use client';
 import { useState } from 'react';
 import { format } from 'date-fns';
@@ -19,7 +20,6 @@ export function AnalyticsModal({ shortId }: { shortId: string }) {
     const fetchAnalytics = async () => {
         setLoading(true);
         try {
-            // Admins can see analytics for any link without a token
             const data = await getLinkAnalytics(shortId);
             setAnalytics(data);
         } catch (error) {
@@ -115,28 +115,28 @@ export function AnalyticsModal({ shortId }: { shortId: string }) {
                                             {analytics.visits.length > 0 ? analytics.visits.map(visit => (
                                                 <Collapsible asChild key={visit.id}>
                                                     <TableBody>
-                                                        <TableRow className="cursor-pointer" data-state="closed">
-                                                            <CollapsibleTrigger asChild>
-                                                                <>
-                                                                    <TableCell className="p-2 align-top text-xs w-[35%] sm:w-[25%] lg:w-[18%]">
-                                                                        <div className="lg:hidden">
-                                                                            <div>{format(new Date(visit.visitedAt), 'MMM d, yyyy')}</div>
-                                                                            <div className="text-muted-foreground">{format(new Date(visit.visitedAt), 'p')}</div>
+                                                        <CollapsibleTrigger asChild>
+                                                            <TableRow className="cursor-pointer group hover:bg-muted/50 data-[state=open]:bg-muted/50">
+                                                                <TableCell colSpan={6} className="p-0">
+                                                                    <div className="flex w-full items-start">
+                                                                        <div className="p-2 text-xs w-[35%] sm:w-[25%] lg:w-[18%]">
+                                                                            <div className="lg:hidden">
+                                                                                <div>{format(new Date(visit.visitedAt), 'MMM d, yyyy')}</div>
+                                                                                <div className="text-muted-foreground">{format(new Date(visit.visitedAt), 'p')}</div>
+                                                                            </div>
+                                                                            <div className="hidden lg:block">
+                                                                                {format(new Date(visit.visitedAt), 'MMM d, yyyy, p')}
+                                                                            </div>
                                                                         </div>
-                                                                        <div className="hidden lg:block">
-                                                                            {format(new Date(visit.visitedAt), 'MMM d, yyyy, p')}
-                                                                        </div>
-                                                                    </TableCell>
-                                                                    <TableCell className="hidden sm:table-cell p-2 text-xs w-[25%] lg:w-[15%]">{getVisitorPrimaryInfo(visit).country}</TableCell>
-                                                                    <TableCell className="hidden lg:table-cell p-2 text-xs w-[15%]">{getVisitorPrimaryInfo(visit).region}</TableCell>
-                                                                    <TableCell className="p-2 text-xs truncate w-[35%] sm:w-[20%] lg:w-[15%]">
-                                                                        {getVisitorPrimaryInfo(visit).os}
-                                                                    </TableCell>
-                                                                    <TableCell className="hidden lg:table-cell p-2 text-xs w-[12%]">{getVisitorPrimaryInfo(visit).battery}</TableCell>
-                                                                    <TableCell className="p-2 text-xs w-[30%] lg:w-[25%]"><code className="block break-all">{getVisitorPrimaryInfo(visit).ip}</code></TableCell>
-                                                                </>
-                                                            </CollapsibleTrigger>
-                                                        </TableRow>
+                                                                        <div className="hidden sm:block p-2 text-xs w-[25%] lg:w-[15%]">{getVisitorPrimaryInfo(visit).country}</div>
+                                                                        <div className="hidden lg:block p-2 text-xs w-[15%]">{getVisitorPrimaryInfo(visit).region}</div>
+                                                                        <div className="p-2 text-xs truncate w-[35%] sm:w-[20%] lg:w-[15%]">{getVisitorPrimaryInfo(visit).os}</div>
+                                                                        <div className="hidden lg:block p-2 text-xs w-[12%]">{getVisitorPrimaryInfo(visit).battery}</div>
+                                                                        <div className="p-2 text-xs w-[30%] lg:w-[25%]"><code className="block break-all">{getVisitorPrimaryInfo(visit).ip}</code></div>
+                                                                    </div>
+                                                                </TableCell>
+                                                            </TableRow>
+                                                        </CollapsibleTrigger>
                                                         <CollapsibleContent asChild>
                                                             <TableRow>
                                                                 <TableCell colSpan={6} className="p-0">
