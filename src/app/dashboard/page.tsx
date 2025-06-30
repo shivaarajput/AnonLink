@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useEffect, useState, useMemo } from 'react';
@@ -242,11 +241,12 @@ export default function DashboardPage() {
             <TableHeader>
               <TableRow>
                 <TableHead className="w-[50px]"></TableHead>
-                <TableHead className="w-[25%] sm:w-[20%]">Short Link</TableHead>
-                <TableHead className="hidden lg:table-cell w-[35%]">Original URL</TableHead>
+                <TableHead>Short Link</TableHead>
+                <TableHead className="hidden lg:table-cell">Original URL</TableHead>
                 <TableHead className="text-center">Clicks</TableHead>
                 {isAdmin && <TableHead className="hidden md:table-cell">Creator Token</TableHead>}
                 <TableHead className="hidden sm:table-cell text-center">Created</TableHead>
+                <TableHead className="hidden lg:table-cell text-center">QR Code</TableHead>
                 <TableHead className="text-right">Actions</TableHead>
               </TableRow>
             </TableHeader>
@@ -255,7 +255,7 @@ export default function DashboardPage() {
               <TableBody>
                 {Array.from({ length: 3 }).map((_, i) => (
                   <TableRow key={i}>
-                    <TableCell colSpan={isAdmin ? 7 : 6}><Skeleton className="h-8 w-full" /></TableCell>
+                    <TableCell colSpan={isAdmin ? 8 : 7}><Skeleton className="h-8 w-full" /></TableCell>
                   </TableRow>
                 ))}
               </TableBody>
@@ -274,21 +274,23 @@ export default function DashboardPage() {
                         </TableCell>
                         <TableCell className="font-medium">
                             <a href={`/${link.shortId}`} onClick={(e) => e.stopPropagation()} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline flex items-center gap-1.5 min-w-0">
-                                <span className="truncate">
+                                <span className="block truncate">
                                     {`${origin.replace(/https?:\/\//, '')}/${link.shortId}`}
                                 </span>
                                 <ExternalLink className="h-3 w-3 shrink-0" />
                             </a>
                         </TableCell>
                         <TableCell className="hidden lg:table-cell">
-                          <span className="truncate block">{link.longUrl}</span>
+                          <span className="block truncate">{link.longUrl}</span>
                         </TableCell>
                         <TableCell className="text-center font-semibold">{link.clicks}</TableCell>
-                        {isAdmin && <TableCell className="hidden md:table-cell"><code className="text-xs bg-muted p-1 rounded truncate block">{link.anonymousToken}</code></TableCell>}
+                        {isAdmin && <TableCell className="hidden md:table-cell"><code className="text-xs bg-muted p-1 rounded block truncate">{link.anonymousToken}</code></TableCell>}
                         <TableCell className="hidden sm:table-cell text-center text-muted-foreground">{format(new Date(link.createdAt), 'MMM d, yyyy')}</TableCell>
+                        <TableCell className="hidden lg:table-cell text-center">
+                          <QrCodeModal url={`${origin}/${link.shortId}`} shortId={link.shortId} />
+                        </TableCell>
                         <TableCell className="text-right">
                            <div className="flex items-center justify-end gap-0.5">
-                              <QrCodeModal url={`${origin}/${link.shortId}`} shortId={link.shortId} />
                               <Button variant="ghost" size="icon" className="h-8 w-8" onClick={(e) => handleCopy(e, link.shortId)} aria-label="Copy link">
                                 {copiedLink === link.shortId ? <Check className="h-4 w-4 text-green-600" /> : <Clipboard className="h-4 w-4" />}
                               </Button>
@@ -304,7 +306,7 @@ export default function DashboardPage() {
                     </TableRow>
                     <CollapsibleContent asChild>
                         <TableRow className="bg-background">
-                            <TableCell colSpan={isAdmin ? 7 : 6} className="p-0">
+                            <TableCell colSpan={isAdmin ? 8 : 7} className="p-0">
                                 {loadingAnalyticsId === link.id && (
                                   <div className="flex items-center justify-center p-8 gap-2">
                                     <Loader2 className="h-5 w-5 animate-spin" />
@@ -323,7 +325,7 @@ export default function DashboardPage() {
             ) : (
               <TableBody>
                 <TableRow>
-                  <TableCell colSpan={isAdmin ? 7 : 6} className="text-center h-24 text-muted-foreground">
+                  <TableCell colSpan={isAdmin ? 8 : 7} className="text-center h-24 text-muted-foreground">
                     You haven't created any links yet.
                   </TableCell>
                 </TableRow>

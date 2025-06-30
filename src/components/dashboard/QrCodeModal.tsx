@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useRef } from 'react';
@@ -53,7 +52,7 @@ export function QrCodeModal({ url, shortId }: QrCodeModalProps) {
   return (
     <Dialog>
       <DialogTrigger asChild>
-        <Button variant="ghost" size="icon" className="hidden lg:inline-flex h-8 w-8" aria-label="Show QR Code" onClick={(e) => e.stopPropagation()}>
+        <Button variant="ghost" size="icon" className="h-8 w-8" aria-label="Show QR Code" onClick={(e) => e.stopPropagation()}>
           <QrCode className="h-4 w-4" />
         </Button>
       </DialogTrigger>
