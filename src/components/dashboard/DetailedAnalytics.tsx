@@ -46,7 +46,7 @@ export function DetailedAnalytics({ link, visits }: DetailedAnalyticsProps) {
                 <Table className="w-full table-fixed">
                     <TableHeader>
                         <TableRow>
-                            <TableHead className="p-2 w-[35%] sm:w-[30%] md:w-[25%] lg:w-[20%]">
+                            <TableHead className="p-2 w-[40%] sm:w-[30%] md:w-[30%] lg:w-[25%]">
                                 <span className="lg:hidden">Datetime</span>
                                 <span className="hidden lg:inline whitespace-nowrap">Visited At</span>
                             </TableHead>
@@ -54,7 +54,7 @@ export function DetailedAnalytics({ link, visits }: DetailedAnalyticsProps) {
                             <TableHead className="p-2 hidden md:table-cell md:w-[20%] lg:w-[15%]">Region</TableHead>
                             <TableHead className="p-2 hidden lg:table-cell lg:w-[10%]">Battery</TableHead>
                             <TableHead className="p-2 w-[30%] sm:w-[20%] md:w-[15%] lg:w-[15%]">OS</TableHead>
-                            <TableHead className="p-2 w-[35%] sm:w-[25%] md:w-[20%] lg:w-[25%]">IP Address</TableHead>
+                            <TableHead className="p-2 w-[30%] sm:w-[25%] md:w-[15%] lg:w-[20%]">IP Address</TableHead>
                         </TableRow>
                     </TableHeader>
                     {visits.length > 0 ? (
@@ -63,9 +63,9 @@ export function DetailedAnalytics({ link, visits }: DetailedAnalyticsProps) {
                                 <TableBody>
                                     <TableRow className="cursor-pointer group hover:bg-muted/50 data-[state=open]:bg-muted/50" data-state="closed">
                                         <CollapsibleTrigger asChild>
-                                             <TableCell colSpan={6} className="p-0">
+                                            <TableCell colSpan={6} className="p-0">
                                                 <div className="flex w-full items-start">
-                                                    <div className="p-2 text-xs align-top w-[35%] sm:w-[30%] md:w-[25%] lg:w-[20%]">
+                                                    <div className="p-2 text-xs align-top w-[40%] sm:w-[30%] md:w-[30%] lg:w-[25%]">
                                                         <span className="hidden lg:inline whitespace-nowrap">{format(new Date(visit.visitedAt), 'MMM d, yyyy, p')}</span>
                                                         <div className="lg:hidden">
                                                             <div>{format(new Date(visit.visitedAt), 'MMM d, yyyy')}</div>
@@ -76,7 +76,7 @@ export function DetailedAnalytics({ link, visits }: DetailedAnalyticsProps) {
                                                     <div className="hidden md:block p-2 text-xs align-top w-[20%] lg:w-[15%]">{getVisitorPrimaryInfo(visit).region}</div>
                                                     <div className="hidden lg:block p-2 text-xs align-top w-[10%]">{getVisitorPrimaryInfo(visit).battery}</div>
                                                     <div className="p-2 text-xs align-top truncate w-[30%] sm:w-[20%] md:w-[15%] lg:w-[15%]">{getVisitorPrimaryInfo(visit).os}</div>
-                                                    <div className="p-2 text-xs align-top w-[35%] sm:w-[25%] md:w-[20%] lg:w-[25%]">
+                                                    <div className="p-2 text-xs align-top w-[30%] sm:w-[25%] md:w-[15%] lg:w-[20%]">
                                                         <code className="block break-all">{getVisitorPrimaryInfo(visit).ip}</code>
                                                     </div>
                                                 </div>

@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useEffect, useState, useMemo } from 'react';
@@ -237,17 +238,17 @@ export default function DashboardPage() {
       </CardHeader>
       <CardContent className="p-0 sm:p-2">
         <div className="rounded-md border">
-          <Table>
+          <Table className="table-fixed w-full">
             <TableHeader>
               <TableRow>
                 <TableHead className="w-[50px]"></TableHead>
                 <TableHead>Short Link</TableHead>
-                <TableHead className="hidden lg:table-cell">Original URL</TableHead>
-                <TableHead className="text-center">Clicks</TableHead>
-                {isAdmin && <TableHead className="hidden md:table-cell">Creator Token</TableHead>}
-                <TableHead className="hidden sm:table-cell text-center">Created</TableHead>
-                <TableHead className="hidden lg:table-cell text-center">QR Code</TableHead>
-                <TableHead className="text-right">Actions</TableHead>
+                <TableHead className="hidden xl:table-cell">Original URL</TableHead>
+                <TableHead className="w-20 text-center">Clicks</TableHead>
+                {isAdmin && <TableHead className="hidden md:table-cell w-40">Creator Token</TableHead>}
+                <TableHead className="hidden sm:table-cell w-28 text-center">Created</TableHead>
+                <TableHead className="hidden lg:table-cell w-24 text-center">QR Code</TableHead>
+                <TableHead className="w-24 text-right">Actions</TableHead>
               </TableRow>
             </TableHeader>
             
@@ -280,7 +281,7 @@ export default function DashboardPage() {
                                 <ExternalLink className="h-3 w-3 shrink-0" />
                             </a>
                         </TableCell>
-                        <TableCell className="hidden lg:table-cell">
+                        <TableCell className="hidden xl:table-cell">
                           <span className="block truncate">{link.longUrl}</span>
                         </TableCell>
                         <TableCell className="text-center font-semibold">{link.clicks}</TableCell>
