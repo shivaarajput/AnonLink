@@ -61,7 +61,7 @@ export function QrCodeModal({ url, shortId }: QrCodeModalProps) {
         <DialogHeader>
           <DialogTitle className="text-center">QR Code for {shortId}</DialogTitle>
         </DialogHeader>
-        <div className="flex flex-col items-center gap-4 py-4">
+        <div className="flex flex-col items-center gap-4 pt-4">
           <div ref={qrRef} className="p-4 bg-white rounded-lg">
             <QRCodeCanvas value={url} size={256} includeMargin={true} />
           </div>
