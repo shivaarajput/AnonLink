@@ -50,12 +50,10 @@ async function isShortIdUnique(shortId: string): Promise<boolean> {
 
 export async function createShortLink(
   longUrl: string,
-  anonymousToken: string,
-  creatorFingerprint: string,
-  creatorFingerprintData: any,
+  anonymousToken: string
 ): Promise<{ shortId?: string; error?: string }> {
   try {
-    if (!longUrl || !anonymousToken || !creatorFingerprint) {
+    if (!longUrl || !anonymousToken) {
       return { error: 'Missing required data.' };
     }
     
@@ -76,8 +74,6 @@ export async function createShortLink(
       shortId,
       longUrl,
       anonymousToken,
-      creatorFingerprint,
-      creatorFingerprintData,
       createdAt: Date.now(),
       clicks: 0,
     };

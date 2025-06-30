@@ -4,8 +4,6 @@ export interface LinkData {
   shortId: string;
   longUrl: string;
   anonymousToken: string;
-  creatorFingerprint: string;
-  creatorFingerprintData?: any;
   createdAt: number;
   clicks: number;
 }

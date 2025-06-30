@@ -13,7 +13,6 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '
 import { useToast } from '@/hooks/use-toast';
 import { createShortLink } from '@/lib/actions';
 import { getAnonymousToken } from '@/lib/store';
-import { getFingerprint } from '@/lib/fingerprint';
 
 const formSchema = z.object({
   url: z.string().url({ message: "Please enter a valid URL." }),
@@ -53,9 +52,8 @@ export default function Home() {
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
     try {
       const token = getAnonymousToken();
-      const { hash: fingerprint, data: fingerprintData } = await getFingerprint();
       
-      const result = await withTimeout(createShortLink(values.url, token, fingerprint, fingerprintData), 10000); // 10 second timeout
+      const result = await withTimeout(createShortLink(values.url, token), 10000); // 10 second timeout
 
       if (result.error) {
         toast({
