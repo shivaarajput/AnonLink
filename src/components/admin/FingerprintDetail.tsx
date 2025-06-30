@@ -33,7 +33,8 @@ const DataRenderer = ({ data, level = 0 }: { data: any, level?: number }) => {
             );
         }
         
-        const isSimpleObject = Object.values(data).every(v => v === null || typeof v !== 'object');
+        // Treat objects containing primitive arrays as "simple" to avoid creating a new table for them.
+        const isSimpleObject = Object.values(data).every(v => v === null || typeof v !== 'object' || Array.isArray(v));
 
         if (isSimpleObject) {
              return (
