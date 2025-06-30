@@ -30,7 +30,7 @@ export function DetailedAnalytics({ link, visits }: DetailedAnalyticsProps) {
 
     return (
         <div className="p-4 bg-muted/30">
-            <Accordion type="multiple" defaultValue={['visitors']} className="w-full">
+            <Accordion type="multiple" defaultValue={['creator', 'visitors']} className="w-full">
                 <AccordionItem value="creator">
                     <AccordionTrigger className="text-base font-semibold hover:no-underline">
                         <div className="flex items-center gap-2">
