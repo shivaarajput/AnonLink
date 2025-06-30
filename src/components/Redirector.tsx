@@ -1,0 +1,48 @@
+'use client';
+
+import { useEffect, useState } from 'react';
+import { getFingerprint } from '@/lib/fingerprint';
+import { logVisit } from '@/lib/actions';
+import { Loader2 } from 'lucide-react';
+
+interface RedirectorProps {
+  longUrl: string;
+  shortId: string;
+}
+
+export default function Redirector({ longUrl, shortId }: RedirectorProps) {
+  const [message, setMessage] = useState('Please wait, we are redirecting you...');
+
+  useEffect(() => {
+    const performRedirect = async () => {
+      try {
+        const fingerprint = await getFingerprint();
+        await logVisit(shortId, fingerprint);
+      } catch (error) {
+        console.error('Failed to log visit:', error);
+      } finally {
+        if (typeof window !== 'undefined') {
+          window.location.replace(longUrl);
+        }
+      }
+    };
+
+    const timer = setTimeout(performRedirect, 500); // Small delay for UX
+
+    return () => clearTimeout(timer);
+  }, [longUrl, shortId]);
+
+  return (
+    <div className="flex flex-col items-center justify-center min-h-[60vh] text-center">
+      <Loader2 className="h-12 w-12 animate-spin text-primary mb-4" />
+      <h1 className="text-2xl font-semibold">{message}</h1>
+      <p className="text-muted-foreground mt-2">
+        If you are not redirected automatically, please{' '}
+        <a href={longUrl} className="text-primary underline">
+          click here
+        </a>
+        .
+      </p>
+    </div>
+  );
+}
