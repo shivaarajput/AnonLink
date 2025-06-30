@@ -1,16 +1,22 @@
+
 'use client';
 
 import Link from 'next/link';
 import { Button } from './ui/button';
 import { Sheet, SheetContent, SheetTrigger } from './ui/sheet';
 import { Menu, Link as LinkIcon } from 'lucide-react';
+import { usePathname } from 'next/navigation';
+import { cn } from '@/lib/utils';
 
 const navLinks = [
+  { href: '/', label: 'Home' },
   { href: '/dashboard', label: 'My Links' },
-  { href: '/admin/dashboard', label: 'Admin' },
+  { href: '/admin/login', label: 'Admin' },
 ];
 
 export default function Header() {
+  const pathname = usePathname();
+
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="container flex h-16 items-center">
@@ -21,7 +27,14 @@ export default function Header() {
           </Link>
           <nav className="flex items-center space-x-6 text-sm font-medium">
             {navLinks.map((link) => (
-                <Link key={link.href} href={link.href} className="transition-colors hover:text-foreground/80 text-foreground/60">
+                <Link 
+                    key={link.href} 
+                    href={link.href} 
+                    className={cn(
+                        "transition-colors hover:text-foreground/80",
+                        pathname === link.href ? "text-foreground" : "text-foreground/60"
+                    )}
+                >
                   {link.label}
                 </Link>
             ))}
@@ -48,7 +61,12 @@ export default function Header() {
                     <span>AnonLink</span>
                 </Link>
                 {navLinks.map((link) => (
-                  <Button key={link.href} asChild variant="ghost" className="justify-start text-lg h-12">
+                  <Button 
+                    key={link.href} 
+                    asChild 
+                    variant={pathname === link.href ? "secondary" : "ghost"}
+                    className="justify-start text-lg h-12"
+                  >
                     <Link href={link.href}>{link.label}</Link>
                   </Button>
                 ))}

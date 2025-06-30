@@ -1,3 +1,4 @@
+
 'use client';
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -6,7 +7,7 @@ import { Badge } from '@/components/ui/badge';
 
 const DataRenderer = ({ data }: { data: any }) => {
     if (typeof data === 'boolean') {
-        return <Badge variant={data ? 'default' : 'secondary'} className={data ? 'bg-green-600/20 text-green-700' : 'bg-red-600/10 text-red-700'}>{String(data)}</Badge>;
+        return <Badge variant={data ? 'default' : 'destructive'} className={data ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}>{String(data)}</Badge>;
     }
 
     if (data === null || data === undefined) {
@@ -65,7 +66,7 @@ export const FingerprintDetail = ({ data }: { data: any }) => {
     return (
         <div className="grid grid-cols-1 xl:grid-cols-2 gap-4 p-4 bg-muted/30">
             {sections.map(section => (
-                <Card key={section.title} className="flex flex-col @container">
+                 <Card key={section.title} className="flex flex-col">
                     <CardHeader>
                         <CardTitle className="text-base font-semibold">{section.title}</CardTitle>
                     </CardHeader>

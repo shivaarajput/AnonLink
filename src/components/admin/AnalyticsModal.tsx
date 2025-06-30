@@ -1,3 +1,4 @@
+
 'use client';
 import { useState } from 'react';
 import { format } from 'date-fns';
@@ -7,7 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogDescription } from '@/components/ui/dialog';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Skeleton } from '@/components/ui/skeleton';
-import { BarChart2, ChevronDown, Globe, Laptop, Smartphone } from 'lucide-react';
+import { BarChart2, ChevronDown, Globe, User } from 'lucide-react';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { FingerprintDetail } from './FingerprintDetail';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
@@ -43,18 +44,19 @@ export function AnalyticsModal({ shortId }: { shortId: string }) {
     return (
         <Dialog onOpenChange={(open) => { if (open && !analytics) fetchAnalytics(); }}>
             <DialogTrigger asChild>
-                <Button variant="ghost" size="icon" aria-label={`View analytics for /${shortId}`}>
-                    <BarChart2 className="h-4 w-4" />
+                <Button variant="outline" size="sm" aria-label={`View analytics for /${shortId}`}>
+                    <BarChart2 className="mr-2 h-4 w-4" />
+                    Details
                 </Button>
             </DialogTrigger>
-            <DialogContent className="max-w-6xl">
+            <DialogContent className="max-w-6xl w-full">
                 <DialogHeader>
                     <DialogTitle>Analytics for /{shortId}</DialogTitle>
                     <DialogDescription>Detailed creator and visitor information for this link.</DialogDescription>
                 </DialogHeader>
-                <div className="max-h-[80vh] overflow-y-auto pr-6">
+                <div className="max-h-[80vh] overflow-y-auto pr-6 -mr-6">
                     {loading ? (
-                         <div className="space-y-4">
+                         <div className="space-y-4 p-1">
                             <Skeleton className="h-10 w-full" />
                             <Skeleton className="h-10 w-full" />
                             <div className="border rounded-md mt-4">
@@ -69,11 +71,11 @@ export function AnalyticsModal({ shortId }: { shortId: string }) {
                             <AccordionItem value="creator">
                                 <AccordionTrigger className="text-lg font-semibold">
                                     <div className="flex items-center gap-2">
-                                        <Smartphone className="h-5 w-5" /> Creator Details
+                                        <User className="h-5 w-5" /> Creator Details
                                     </div>
                                 </AccordionTrigger>
                                 <AccordionContent>
-                                    <div className="mb-4 space-y-2 text-sm">
+                                    <div className="mb-4 space-y-2 text-sm px-4">
                                         <div><strong>Original URL:</strong> <a href={analytics.link.longUrl} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline break-all">{analytics.link.longUrl}</a></div>
                                         <div><strong>Creator Fingerprint Hash:</strong> <code className="text-xs bg-muted p-1 rounded break-all">{analytics.link.creatorFingerprint}</code></div>
                                     </div>

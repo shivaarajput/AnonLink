@@ -1,3 +1,4 @@
+
 'use server';
 
 import {
@@ -24,7 +25,7 @@ function getFirebaseErrorMessage(error: unknown): string {
             case 'unavailable':
                  return 'The service is currently unavailable. This could be a temporary issue with Firestore.';
             default:
-                return firebaseError.message;
+                return `An internal server error occurred.`;
         }
     }
     return 'An unexpected error occurred.';
@@ -93,13 +94,12 @@ export async function logVisit(shortId: string, visitorFingerprint: string, visi
     try {
         if(!shortId || !visitorFingerprint) return { success: false, error: 'Missing data' };
         
-        const getBrowser = (userAgent: string) => {
+        const getBrowserFromUserAgent = (userAgent: string) => {
             if (!userAgent) return 'Unknown';
             if (userAgent.includes('Firefox')) return 'Firefox';
             if (userAgent.includes('SamsungBrowser')) return 'Samsung Browser';
             if (userAgent.includes('Opera') || userAgent.includes('OPR')) return 'Opera';
-            if (userAgent.includes('Edge')) return 'Edge';
-            if (userAgent.includes('Edg/')) return 'Edge';
+            if (userAgent.includes('Edge') || userAgent.includes('Edg')) return 'Edge';
             if (userAgent.includes('Chrome')) return 'Chrome';
             if (userAgent.includes('Safari')) return 'Safari';
             return 'Other';
@@ -110,11 +110,12 @@ export async function logVisit(shortId: string, visitorFingerprint: string, visi
             visitorFingerprint,
             visitedAt: Date.now(),
             visitorData,
-            browser: getBrowser(visitorData.software?.userAgent),
-            os: visitorData.software?.os || 'Unknown',
-            country: visitorData.network?.public?.country || 'Unknown',
-            isp: visitorData.network?.public?.isp || 'Unknown',
-            gpuRenderer: visitorData.hardware?.gpu?.renderer || 'Unknown',
+            // Add simplified fields for quick filtering/charting
+            browser: getBrowserFromUserAgent(visitorData?.software?.userAgent),
+            os: visitorData?.software?.os || 'Unknown',
+            country: visitorData?.network?.public?.country || 'Unknown',
+            isp: visitorData?.network?.public?.isp || 'Unknown',
+            gpuRenderer: visitorData?.hardware?.gpu?.renderer || 'Unknown',
         };
 
         await addDoc(collection(db, 'analytics'), visitData);

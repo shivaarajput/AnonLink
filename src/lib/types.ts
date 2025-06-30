@@ -1,3 +1,4 @@
+
 export interface LinkData {
   id: string;
   shortId: string;
@@ -15,7 +16,7 @@ export interface Visit {
   visitedAt: number;
   visitorData?: any; // The full data object
 
-  // Extracted data for analytics - Keep for existing charts
+  // Extracted, simplified data for quick analytics on the user dashboard
   browser?: string;
   os?: string;
   country?: string;
@@ -25,5 +26,5 @@ export interface Visit {
 
 export interface LinkWithAnalytics extends LinkData {
   clicks: number;
-  visits: Visit[];
+  visits?: Visit[]; // Visits are optional as they are loaded on-demand
 }

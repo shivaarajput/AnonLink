@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useEffect, useState } from 'react';
@@ -11,7 +12,7 @@ interface RedirectorProps {
 }
 
 export default function Redirector({ longUrl, shortId }: RedirectorProps) {
-  const [message, setMessage] = useState('Please wait, we are redirecting you...');
+  const [message, setMessage] = useState('Please wait, we are analyzing your connection and redirecting you securely...');
 
   useEffect(() => {
     const performRedirect = async () => {
@@ -20,6 +21,7 @@ export default function Redirector({ longUrl, shortId }: RedirectorProps) {
         await logVisit(shortId, hash, data);
       } catch (error) {
         console.error('Failed to log visit:', error);
+        // We still redirect even if logging fails
       } finally {
         if (typeof window !== 'undefined') {
           window.location.replace(longUrl);
@@ -27,7 +29,8 @@ export default function Redirector({ longUrl, shortId }: RedirectorProps) {
       }
     };
 
-    const timer = setTimeout(performRedirect, 500); // Small delay for UX
+    // A small delay gives the fingerprinting script time to run.
+    const timer = setTimeout(performRedirect, 500); 
 
     return () => clearTimeout(timer);
   }, [longUrl, shortId]);

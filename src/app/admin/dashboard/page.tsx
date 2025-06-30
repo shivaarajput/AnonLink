@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useEffect, useState } from 'react';
@@ -10,7 +11,6 @@ import { LinkWithAnalytics } from '@/lib/types';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
-import { Skeleton } from '@/components/ui/skeleton';
 import { AnalyticsModal } from '@/components/admin/AnalyticsModal';
 import { LogOut, Loader2, ShieldAlert } from 'lucide-react';
 
@@ -31,11 +31,9 @@ export default function AdminDashboardPage() {
                     const allLinks = await getAllLinksAdmin();
                     setLinks(allLinks);
                 } else {
-                    // Not an admin, redirect
                     router.replace('/admin/login');
                 }
             } else {
-                // Not logged in, redirect
                 router.replace('/admin/login');
             }
             setLoading(false);
@@ -106,7 +104,7 @@ export default function AdminDashboardPage() {
                                     </TableCell>
                                 </TableRow>
                             ))}
-                             {links.length === 0 && (
+                             {links.length === 0 && !loading && (
                                 <TableRow>
                                     <TableCell colSpan={5} className="h-24 text-center text-muted-foreground">No links have been created yet.</TableCell>
                                 </TableRow>

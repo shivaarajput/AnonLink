@@ -1,3 +1,4 @@
+
 const ANONYMOUS_TOKEN_KEY = 'anonlink_token';
 
 export const getAnonymousToken = (): string => {

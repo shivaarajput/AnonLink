@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -32,6 +33,8 @@ export default function AdminLoginPage() {
         if (isAdmin) {
           router.replace('/admin/dashboard');
         } else {
+          // If user is logged in but not an admin, sign them out before showing login
+          await auth.signOut();
           setLoading(false);
         }
       } else {

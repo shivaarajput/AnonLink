@@ -1,10 +1,11 @@
+
 'use client';
 
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
-import { Link as LinkIcon, Clipboard, Check } from 'lucide-react';
+import { Link as LinkIcon, Clipboard, Check, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -66,6 +67,7 @@ export default function Home() {
     if (shortenedUrl) {
       navigator.clipboard.writeText(shortenedUrl);
       setIsCopied(true);
+      toast({ title: 'Copied to clipboard!' });
       setTimeout(() => setIsCopied(false), 2000);
     }
   };
@@ -90,7 +92,7 @@ export default function Home() {
                       <Input 
                         placeholder="https://example.com/very-long-url-to-shorten" 
                         {...field} 
-                        className="h-12 text-center"
+                        className="h-12 text-lg text-center"
                       />
                     </FormControl>
                     <FormMessage />
@@ -98,7 +100,11 @@ export default function Home() {
                 )}
               />
               <Button type="submit" className="w-full h-12 text-lg" disabled={form.formState.isSubmitting}>
-                <LinkIcon className="mr-2 h-5 w-5" />
+                {form.formState.isSubmitting ? (
+                  <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                ) : (
+                  <LinkIcon className="mr-2 h-5 w-5" />
+                )}
                 {form.formState.isSubmitting ? 'Shortening...' : 'Shorten URL'}
               </Button>
             </form>

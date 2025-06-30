@@ -1,6 +1,7 @@
+
 'use client';
 
-// A comprehensive client-side fingerprinting utility, as per the detailed request.
+// A comprehensive client-side fingerprinting utility.
 
 // Helper function to safely get a value, handling errors gracefully.
 const safeGet = async <T>(getter: () => T | Promise<T>): Promise<T | string> => {

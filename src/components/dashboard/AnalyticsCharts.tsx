@@ -1,18 +1,20 @@
+
 'use client';
 
 import { Visit } from '@/lib/types';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
+import { BarChart as RechartsBarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { useMemo } from 'react';
 
 interface AnalyticsChartsProps {
   visits: Visit[];
 }
 
-const processData = (visits: Visit[], key: keyof Visit) => {
+const processData = (visits: Visit[], key: keyof Visit, slice: number = 7) => {
     const counts = visits.reduce((acc, visit) => {
-        let value = (visit[key] as string) || 'Unknown';
-        if (key === 'gpuRenderer' && value.length > 35) {
+        let value: string = (visit as any)[key] as string || 'Unknown';
+        
+        if (value.length > 35) {
             value = value.substring(0, 35) + '...';
         }
         acc[value] = (acc[value] || 0) + 1;
@@ -22,7 +24,7 @@ const processData = (visits: Visit[], key: keyof Visit) => {
     return Object.entries(counts)
         .map(([name, value]) => ({ name, value }))
         .sort((a, b) => b.value - a.value)
-        .slice(0, 7); // Get top 7 for cleaner charts
+        .slice(0, slice);
 };
 
 export function AnalyticsCharts({ visits }: AnalyticsChartsProps) {
@@ -43,7 +45,7 @@ export function AnalyticsCharts({ visits }: AnalyticsChartsProps) {
                 </CardHeader>
                 <CardContent>
                     <ResponsiveContainer width="100%" height={250}>
-                        <BarChart data={data} layout="vertical" margin={{ top: 5, right: 20, left: 20, bottom: 5 }}>
+                        <RechartsBarChart data={data} layout="vertical" margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
                             <CartesianGrid strokeDasharray="3 3" horizontal={false} />
                             <XAxis type="number" allowDecimals={false} stroke="hsl(var(--muted-foreground))" fontSize={12} />
                             <YAxis 
@@ -51,6 +53,7 @@ export function AnalyticsCharts({ visits }: AnalyticsChartsProps) {
                                 dataKey="name" 
                                 width={100} 
                                 tick={{ fontSize: 12 }}
+                                interval={0}
                                 stroke="hsl(var(--muted-foreground))"
                             />
                             <Tooltip 
@@ -59,10 +62,11 @@ export function AnalyticsCharts({ visits }: AnalyticsChartsProps) {
                                     backgroundColor: 'hsl(var(--background))',
                                     border: '1px solid hsl(var(--border))',
                                     borderRadius: 'var(--radius)',
+                                    fontSize: '12px'
                                 }}
                             />
-                            <Bar dataKey="value" fill="hsl(var(--primary))" barSize={20} radius={[0, 4, 4, 0]} />
-                        </BarChart>
+                            <Bar dataKey="value" name="Clicks" fill="hsl(var(--primary))" barSize={20} radius={[0, 4, 4, 0]} />
+                        </RechartsBarChart>
                     </ResponsiveContainer>
                 </CardContent>
             </Card>
