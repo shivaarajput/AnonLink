@@ -1,10 +1,11 @@
+
 'use client';
 
-import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
-import { Link as LinkIcon, Clipboard, Check, Loader2 } from 'lucide-react';
+import { Link as LinkIcon, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -39,9 +40,8 @@ function withTimeout<T>(promise: Promise<T>, ms: number): Promise<T> {
 }
 
 export default function Home() {
-  const [shortenedUrl, setShortenedUrl] = useState<string | null>(null);
-  const [isCopied, setIsCopied] = useState(false);
   const { toast } = useToast();
+  const router = useRouter();
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -52,8 +52,6 @@ export default function Home() {
 
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
     try {
-      setShortenedUrl(null);
-      setIsCopied(false);
       const token = getAnonymousToken();
       const { hash: fingerprint, data: fingerprintData } = await getFingerprint();
       
@@ -66,12 +64,11 @@ export default function Home() {
           variant: 'destructive',
         });
       } else if (result.shortId) {
-        const fullUrl = `${window.location.origin}/${result.shortId}`;
-        setShortenedUrl(fullUrl);
         toast({
           title: 'Success!',
           description: 'Your URL has been shortened.',
         });
+        router.push('/dashboard');
       }
     } catch (error: any) {
       toast({
@@ -79,15 +76,6 @@ export default function Home() {
         description: error.message || 'An unexpected error occurred. Please try again.',
         variant: 'destructive',
       });
-    }
-  };
-
-  const handleCopy = () => {
-    if (shortenedUrl) {
-      navigator.clipboard.writeText(shortenedUrl);
-      setIsCopied(true);
-      toast({ title: 'Copied to clipboard!' });
-      setTimeout(() => setIsCopied(false), 2000);
     }
   };
 
@@ -128,17 +116,6 @@ export default function Home() {
               </Button>
             </form>
           </Form>
-
-          {shortenedUrl && (
-            <div className="mt-6 p-4 bg-secondary rounded-lg flex items-center justify-between animate-in fade-in-50">
-              <a href={shortenedUrl} target="_blank" rel="noopener noreferrer" className="text-primary font-medium truncate mr-4">
-                {shortenedUrl}
-              </a>
-              <Button onClick={handleCopy} variant="ghost" size="icon" aria-label="Copy to clipboard">
-                {isCopied ? <Check className="h-5 w-5 text-green-600" /> : <Clipboard className="h-5 w-5" />}
-              </Button>
-            </div>
-          )}
         </CardContent>
       </Card>
     </div>
