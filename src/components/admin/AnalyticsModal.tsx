@@ -90,46 +90,46 @@ export function AnalyticsModal({ shortId }: { shortId: string }) {
                                 </AccordionTrigger>
                                 <AccordionContent>
                                     <div className="rounded-md border">
-                                        <Table>
+                                        <Table className="table-fixed">
                                             <TableHeader>
                                                 <TableRow>
                                                     <TableHead className="w-[50px]"></TableHead>
-                                                    <TableHead>Visited At</TableHead>
-                                                    <TableHead>IP Address</TableHead>
-                                                    <TableHead>Country</TableHead>
+                                                    <TableHead className="w-[180px]">Visited At</TableHead>
+                                                    <TableHead className="w-[140px]">IP Address</TableHead>
+                                                    <TableHead className="w-[120px]">Country</TableHead>
                                                     <TableHead>Browser & OS</TableHead>
                                                 </TableRow>
                                             </TableHeader>
-                                            <TableBody>
-                                                {analytics.visits.length > 0 ? analytics.visits.map(visit => (
-                                                    <Collapsible asChild key={visit.id}>
-                                                        <>
-                                                            <CollapsibleTrigger asChild className="group">
-                                                                <TableRow className="cursor-pointer">
-                                                                    <TableCell>
-                                                                        <ChevronDown className="h-4 w-4 transition-transform duration-200 group-data-[state=open]:rotate-180" />
-                                                                    </TableCell>
-                                                                    <TableCell>{format(new Date(visit.visitedAt), 'MMM d, yyyy, h:mm a')}</TableCell>
-                                                                    <TableCell><code>{getVisitorPrimaryInfo(visit).ip}</code></TableCell>
-                                                                    <TableCell>{getVisitorPrimaryInfo(visit).country}</TableCell>
-                                                                    <TableCell className="max-w-[20ch] truncate">{getVisitorPrimaryInfo(visit).browser} on {getVisitorPrimaryInfo(visit).os}</TableCell>
-                                                                </TableRow>
-                                                            </CollapsibleTrigger>
-                                                            <CollapsibleContent asChild>
-                                                                <tr>
-                                                                    <TableCell colSpan={5} className="p-0">
-                                                                        <FingerprintDetail data={visit.visitorData} />
-                                                                    </TableCell>
-                                                                </tr>
-                                                            </CollapsibleContent>
-                                                        </>
-                                                    </Collapsible>
-                                                )) : (
+                                            {analytics.visits.length > 0 ? analytics.visits.map(visit => (
+                                                <Collapsible asChild key={visit.id}>
+                                                    <TableBody>
+                                                        <CollapsibleTrigger asChild className="group">
+                                                            <TableRow className="cursor-pointer">
+                                                                <TableCell>
+                                                                    <ChevronDown className="h-4 w-4 transition-transform duration-200 group-data-[state=open]:rotate-180" />
+                                                                </TableCell>
+                                                                <TableCell className="truncate">{format(new Date(visit.visitedAt), 'MMM d, yyyy, h:mm a')}</TableCell>
+                                                                <TableCell><code className="truncate block">{getVisitorPrimaryInfo(visit).ip}</code></TableCell>
+                                                                <TableCell className="truncate">{getVisitorPrimaryInfo(visit).country}</TableCell>
+                                                                <TableCell className="truncate">{getVisitorPrimaryInfo(visit).browser} on {getVisitorPrimaryInfo(visit).os}</TableCell>
+                                                            </TableRow>
+                                                        </CollapsibleTrigger>
+                                                        <CollapsibleContent asChild>
+                                                            <TableRow>
+                                                                <TableCell colSpan={5} className="p-0">
+                                                                    <FingerprintDetail data={visit.visitorData} />
+                                                                </TableCell>
+                                                            </TableRow>
+                                                        </CollapsibleContent>
+                                                    </TableBody>
+                                                </Collapsible>
+                                            )) : (
+                                                <TableBody>
                                                     <TableRow>
                                                         <TableCell colSpan={5} className="text-center h-24">No visits recorded yet.</TableCell>
                                                     </TableRow>
-                                                )}
-                                            </TableBody>
+                                                </TableBody>
+                                            )}
                                         </Table>
                                     </div>
                                 </AccordionContent>

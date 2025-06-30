@@ -33,13 +33,13 @@ export function DetailedAnalytics({ link, visits }: DetailedAnalyticsProps) {
                 <Globe className="h-5 w-5 text-primary" /> Visitor Details ({visits.length} clicks)
             </h3>
             <div className="rounded-md border bg-card">
-                <Table>
+                <Table className="table-fixed">
                     <TableHeader>
                         <TableRow>
                             <TableHead className="w-[50px]"></TableHead>
-                            <TableHead>Visited At</TableHead>
-                            <TableHead>IP Address</TableHead>
-                            <TableHead>Country</TableHead>
+                            <TableHead className="w-[180px]">Visited At</TableHead>
+                            <TableHead className="w-[140px]">IP Address</TableHead>
+                            <TableHead className="w-[120px]">Country</TableHead>
                             <TableHead>Browser & OS</TableHead>
                         </TableRow>
                     </TableHeader>
@@ -52,10 +52,10 @@ export function DetailedAnalytics({ link, visits }: DetailedAnalyticsProps) {
                                             <TableCell>
                                                 <ChevronDown className="h-4 w-4 transition-transform duration-200 group-data-[state=open]:rotate-180" />
                                             </TableCell>
-                                            <TableCell>{format(new Date(visit.visitedAt), 'MMM d, yyyy, h:mm a')}</TableCell>
-                                            <TableCell><code>{getVisitorPrimaryInfo(visit).ip}</code></TableCell>
-                                            <TableCell>{getVisitorPrimaryInfo(visit).country}</TableCell>
-                                            <TableCell className="max-w-[20ch] truncate">{getVisitorPrimaryInfo(visit).browser} on {getVisitorPrimaryInfo(visit).os}</TableCell>
+                                            <TableCell className="truncate">{format(new Date(visit.visitedAt), 'MMM d, yyyy, h:mm a')}</TableCell>
+                                            <TableCell><code className="truncate block">{getVisitorPrimaryInfo(visit).ip}</code></TableCell>
+                                            <TableCell className="truncate">{getVisitorPrimaryInfo(visit).country}</TableCell>
+                                            <TableCell className="truncate">{getVisitorPrimaryInfo(visit).browser} on {getVisitorPrimaryInfo(visit).os}</TableCell>
                                         </TableRow>
                                     </CollapsibleTrigger>
                                     <CollapsibleContent asChild>
