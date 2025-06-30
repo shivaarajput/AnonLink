@@ -1,4 +1,3 @@
-
 'use client';
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -18,22 +17,24 @@ const DataRenderer = ({ data, level = 0 }: { data: any, level?: number }) => {
     if (typeof data === 'object') {
         if (Array.isArray(data)) {
             if (data.length === 0) return <span className="text-muted-foreground/80">Empty</span>;
-            const isSimpleArray = data.every(item => typeof item !== 'object');
+            
+            const isSimpleArray = data.every(item => typeof item !== 'object' || item === null);
+
             if (isSimpleArray) {
                 return <div className="flex flex-wrap gap-1">{data.map((item, index) => <Badge variant="secondary" key={index}>{String(item)}</Badge>)}</div>
             }
+            
             return (
-                 <ul className="list-disc list-inside space-y-1">
+                 <div className="flex flex-col gap-2">
                     {data.map((item, index) => (
-                        <li key={index}>
+                        <div key={index} className="rounded-md border bg-muted/30 p-2">
                             <DataRenderer data={item} level={level + 1} />
-                        </li>
+                        </div>
                     ))}
-                </ul>
+                </div>
             );
         }
         
-        // Treat objects containing primitive arrays as "simple" to avoid creating a new table for them.
         const isSimpleObject = Object.values(data).every(v => v === null || typeof v !== 'object' || Array.isArray(v));
 
         if (isSimpleObject) {
