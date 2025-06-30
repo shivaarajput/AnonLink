@@ -169,6 +169,7 @@ export default function DashboardPage() {
     const url = `${origin}/${shortId}`;
     navigator.clipboard.writeText(url);
     toast({ title: 'Copied to clipboard!' });
+    setCopiedLink(shortId);
     setTimeout(() => setCopiedLink(null), 2000);
   };
   
@@ -237,16 +238,16 @@ export default function DashboardPage() {
       </CardHeader>
       <CardContent className="p-0 sm:p-2">
         <div className="rounded-md border">
-          <Table className="table-fixed w-full">
+          <Table>
             <TableHeader>
               <TableRow>
                 <TableHead className="w-[50px]"></TableHead>
-                <TableHead>Short Link</TableHead>
-                <TableHead className="hidden lg:table-cell">Original URL</TableHead>
-                <TableHead className="text-center w-[70px]">Clicks</TableHead>
-                {isAdmin && <TableHead className="hidden md:table-cell w-[150px]">Creator Token</TableHead>}
-                <TableHead className="hidden sm:table-cell text-center w-[120px]">Created</TableHead>
-                <TableHead className="text-right w-[150px]">Actions</TableHead>
+                <TableHead className="w-[25%] sm:w-[20%]">Short Link</TableHead>
+                <TableHead className="hidden lg:table-cell w-[35%]">Original URL</TableHead>
+                <TableHead className="text-center">Clicks</TableHead>
+                {isAdmin && <TableHead className="hidden md:table-cell">Creator Token</TableHead>}
+                <TableHead className="hidden sm:table-cell text-center">Created</TableHead>
+                <TableHead className="text-right">Actions</TableHead>
               </TableRow>
             </TableHeader>
             
@@ -271,7 +272,7 @@ export default function DashboardPage() {
                               </Button>
                            </CollapsibleTrigger>
                         </TableCell>
-                        <TableCell className="font-medium truncate">
+                        <TableCell className="font-medium">
                             <a href={`/${link.shortId}`} onClick={(e) => e.stopPropagation()} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline flex items-center gap-1.5 min-w-0">
                                 <span className="truncate">
                                     {`${origin.replace(/https?:\/\//, '')}/${link.shortId}`}
@@ -279,9 +280,11 @@ export default function DashboardPage() {
                                 <ExternalLink className="h-3 w-3 shrink-0" />
                             </a>
                         </TableCell>
-                        <TableCell className="hidden lg:table-cell truncate">{link.longUrl}</TableCell>
+                        <TableCell className="hidden lg:table-cell">
+                          <span className="truncate block">{link.longUrl}</span>
+                        </TableCell>
                         <TableCell className="text-center font-semibold">{link.clicks}</TableCell>
-                        {isAdmin && <TableCell className="hidden md:table-cell truncate"><code className="text-xs bg-muted p-1 rounded">{link.anonymousToken}</code></TableCell>}
+                        {isAdmin && <TableCell className="hidden md:table-cell"><code className="text-xs bg-muted p-1 rounded truncate block">{link.anonymousToken}</code></TableCell>}
                         <TableCell className="hidden sm:table-cell text-center text-muted-foreground">{format(new Date(link.createdAt), 'MMM d, yyyy')}</TableCell>
                         <TableCell className="text-right">
                            <div className="flex items-center justify-end gap-0.5">
