@@ -87,14 +87,31 @@ export async function createShortLink(
   }
 }
 
-export async function logVisit(shortId: string, visitorFingerprint: string): Promise<{ success: boolean; error?: string }> {
+export async function logVisit(shortId: string, visitorFingerprint: string, visitorData: any): Promise<{ success: boolean; error?: string }> {
     try {
         if(!shortId || !visitorFingerprint) return { success: false, error: 'Missing data' };
+        
+        const getBrowser = (userAgent: string) => {
+            if (!userAgent) return 'Unknown';
+            if (userAgent.includes('Firefox')) return 'Firefox';
+            if (userAgent.includes('SamsungBrowser')) return 'Samsung Browser';
+            if (userAgent.includes('Opera') || userAgent.includes('OPR')) return 'Opera';
+            if (userAgent.includes('Edge')) return 'Edge';
+            if (userAgent.includes('Edg/')) return 'Edge';
+            if (userAgent.includes('Chrome')) return 'Chrome';
+            if (userAgent.includes('Safari')) return 'Safari';
+            return 'Other';
+        }
         
         const visitData: Omit<Visit, 'id'> = {
             shortId,
             visitorFingerprint,
             visitedAt: Date.now(),
+            browser: getBrowser(visitorData.software?.browser),
+            os: visitorData.software?.os || 'Unknown',
+            country: visitorData.network?.public?.country || 'Unknown',
+            isp: visitorData.network?.public?.isp || 'Unknown',
+            gpuRenderer: visitorData.hardware?.gpu?.renderer || 'Unknown',
         };
 
         await addDoc(collection(db, 'analytics'), visitData);
@@ -134,10 +151,11 @@ export async function getLinksByToken(anonymousToken: string): Promise<LinkWithA
             
             const analyticsRef = collection(db, 'analytics');
             const analyticsQuery = query(analyticsRef, where('shortId', '==', linkData.shortId));
-            const clicksSnapshot = await getCountFromServer(analyticsQuery);
-            const clicks = clicksSnapshot.data().count;
+            const analyticsSnapshot = await getDocs(analyticsQuery);
+            const clicks = analyticsSnapshot.size;
+            const visits = analyticsSnapshot.docs.map(visitDoc => ({ id: visitDoc.id, ...visitDoc.data() }) as Visit);
 
-            links.push({ ...linkData, clicks });
+            links.push({ ...linkData, clicks, visits });
         }
 
         return links.sort((a, b) => b.createdAt - a.createdAt);

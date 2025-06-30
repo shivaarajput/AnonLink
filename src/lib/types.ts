@@ -7,13 +7,20 @@ export interface LinkData {
   createdAt: number;
 }
 
-export interface LinkWithAnalytics extends LinkData {
-  clicks: number;
-}
-
 export interface Visit {
-  id:string;
+  id: string;
   shortId: string;
   visitorFingerprint: string;
   visitedAt: number;
+  // Extracted data for analytics
+  browser?: string;
+  os?: string;
+  country?: string;
+  isp?: string;
+  gpuRenderer?: string;
+}
+
+export interface LinkWithAnalytics extends LinkData {
+  clicks: number;
+  visits: Visit[];
 }

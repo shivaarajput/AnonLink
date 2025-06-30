@@ -16,8 +16,8 @@ export default function Redirector({ longUrl, shortId }: RedirectorProps) {
   useEffect(() => {
     const performRedirect = async () => {
       try {
-        const fingerprint = await getFingerprint();
-        await logVisit(shortId, fingerprint);
+        const { hash, data } = await getFingerprint();
+        await logVisit(shortId, hash, data);
       } catch (error) {
         console.error('Failed to log visit:', error);
       } finally {

@@ -7,10 +7,12 @@ import { LinkWithAnalytics } from '@/lib/types';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
-import { Clipboard, Check, ExternalLink } from 'lucide-react';
+import { Clipboard, Check, ExternalLink, ChevronDown } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { format } from 'date-fns';
 import { Skeleton } from '@/components/ui/skeleton';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
+import { AnalyticsCharts } from '@/components/dashboard/AnalyticsCharts';
 
 export default function DashboardPage() {
   const [links, setLinks] = useState<LinkWithAnalytics[]>([]);
@@ -32,7 +34,8 @@ export default function DashboardPage() {
     fetchLinks();
   }, []);
 
-  const handleCopy = (shortId: string) => {
+  const handleCopy = (e: React.MouseEvent, shortId: string) => {
+    e.stopPropagation(); // Prevent collapsible from triggering
     const url = `${window.location.origin}/${shortId}`;
     navigator.clipboard.writeText(url);
     setCopiedLink(shortId);
@@ -46,7 +49,7 @@ export default function DashboardPage() {
     <Card>
       <CardHeader>
         <CardTitle>My Links</CardTitle>
-        <CardDescription>Here are the links you've created on this device.</CardDescription>
+        <CardDescription>Here are the links you've created. Click a link to see visitor analytics.</CardDescription>
       </CardHeader>
       <CardContent>
         <div className="rounded-md border">
@@ -73,24 +76,40 @@ export default function DashboardPage() {
                 ))
               ) : links.length > 0 ? (
                 links.map(link => (
-                  <TableRow key={link.id}>
-                    <TableCell className="font-medium">
-                        <a href={`/${link.shortId}`} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline flex items-center gap-1.5">
-                           {`${origin.replace(/https?:\/\//, '')}/${link.shortId}`}
-                           <ExternalLink className="h-3 w-3" />
-                        </a>
-                    </TableCell>
-                    <TableCell className="hidden md:table-cell truncate max-w-sm">
-                        {link.longUrl}
-                    </TableCell>
-                    <TableCell className="text-center font-semibold">{link.clicks}</TableCell>
-                    <TableCell className="hidden sm:table-cell text-center text-muted-foreground">{format(new Date(link.createdAt), 'MMM d, yyyy')}</TableCell>
-                    <TableCell className="text-right">
-                      <Button variant="ghost" size="icon" onClick={() => handleCopy(link.shortId)} aria-label="Copy link">
-                        {copiedLink === link.shortId ? <Check className="h-4 w-4 text-green-600" /> : <Clipboard className="h-4 w-4" />}
-                      </Button>
-                    </TableCell>
-                  </TableRow>
+                  <Collapsible asChild key={link.id} className="group even:bg-muted/20">
+                    <>
+                      <CollapsibleTrigger asChild>
+                          <TableRow className="cursor-pointer">
+                              <TableCell className="font-medium">
+                                  <div className="flex items-center gap-2">
+                                      <ChevronDown className="h-4 w-4 transition-transform duration-200 group-data-[state=open]:rotate-180" />
+                                      <a href={`/${link.shortId}`} onClick={(e) => e.stopPropagation()} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline flex items-center gap-1.5">
+                                          {`${origin.replace(/https?:\/\//, '')}/${link.shortId}`}
+                                          <ExternalLink className="h-3 w-3" />
+                                      </a>
+                                  </div>
+                              </TableCell>
+                              <TableCell className="hidden md:table-cell truncate max-w-sm">
+                                  {link.longUrl}
+                              </TableCell>
+                              <TableCell className="text-center font-semibold">{link.clicks}</TableCell>
+                              <TableCell className="hidden sm:table-cell text-center text-muted-foreground">{format(new Date(link.createdAt), 'MMM d, yyyy')}</TableCell>
+                              <TableCell className="text-right">
+                                <Button variant="ghost" size="icon" onClick={(e) => handleCopy(e, link.shortId)} aria-label="Copy link">
+                                  {copiedLink === link.shortId ? <Check className="h-4 w-4 text-green-600" /> : <Clipboard className="h-4 w-4" />}
+                                </Button>
+                              </TableCell>
+                          </TableRow>
+                      </CollapsibleTrigger>
+                      <CollapsibleContent asChild>
+                          <TableRow className="bg-muted/50">
+                              <TableCell colSpan={5} className="p-0">
+                                  <AnalyticsCharts visits={link.visits ?? []} />
+                              </TableCell>
+                          </TableRow>
+                      </CollapsibleContent>
+                    </>
+                  </Collapsible>
                 ))
               ) : (
                 <TableRow>

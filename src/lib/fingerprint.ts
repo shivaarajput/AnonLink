@@ -212,9 +212,9 @@ const getDisplayData = async () => {
     };
 };
 
-export const getFingerprint = async (): Promise<string> => {
+export const getFingerprint = async (): Promise<{ hash: string, data: any }> => {
   if (typeof window === 'undefined' || typeof document === 'undefined') {
-    return 'server';
+    return { hash: 'server', data: { type: 'server' } };
   }
 
   const data = {
@@ -231,5 +231,5 @@ export const getFingerprint = async (): Promise<string> => {
   const hashArray = Array.from(new Uint8Array(hashBuffer));
   const hashHex = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
   
-  return hashHex;
+  return { hash: hashHex, data };
 };

@@ -35,7 +35,7 @@ export default function Home() {
       setShortenedUrl(null);
       setIsCopied(false);
       const token = getAnonymousToken();
-      const fingerprint = await getFingerprint();
+      const { hash: fingerprint } = await getFingerprint();
       
       const result = await createShortLink(values.url, token, fingerprint);
 
