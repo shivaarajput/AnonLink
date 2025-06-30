@@ -12,6 +12,25 @@ import { db } from './firebase';
 import { LinkData, LinkWithAnalytics, Visit } from './types';
 import { revalidatePath } from 'next/cache';
 
+// Helper to get a more specific error message from a Firebase error
+function getFirebaseErrorMessage(error: unknown): string {
+    if (error && typeof error === 'object' && 'code' in error) {
+        const firebaseError = error as { code: string; message: string };
+        switch (firebaseError.code) {
+            case 'permission-denied':
+                return 'Database permission denied. Please check your Firestore security rules to allow writes to the "links" and "analytics" collections.';
+            case 'unauthenticated':
+                return 'Authentication failed. Please check your API keys.';
+            case 'unavailable':
+                 return 'The service is currently unavailable. This could be a temporary issue with Firestore.';
+            default:
+                return firebaseError.message;
+        }
+    }
+    return 'An unexpected error occurred.';
+}
+
+
 // Helper to generate a random short ID
 function generateShortId(length = 7) {
   const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
@@ -64,7 +83,7 @@ export async function createShortLink(
     return { shortId };
   } catch (error) {
     console.error('Error creating short link:', error);
-    return { error: 'An internal server error occurred.' };
+    return { error: getFirebaseErrorMessage(error) };
   }
 }
 
@@ -82,78 +101,98 @@ export async function logVisit(shortId: string, visitorFingerprint: string): Pro
         return { success: true };
     } catch (error) {
         console.error('Error logging visit:', error);
-        return { success: false, error: 'Failed to log visit' };
+        return { success: false, error: getFirebaseErrorMessage(error) };
     }
 }
 
 export async function getLongUrl(shortId: string): Promise<string | null> {
-    const q = query(collection(db, 'links'), where('shortId', '==', shortId));
-    const snapshot = await getDocs(q);
-    if (snapshot.empty) {
-        return null;
+    try {
+        const q = query(collection(db, 'links'), where('shortId', '==', shortId));
+        const snapshot = await getDocs(q);
+        if (snapshot.empty) {
+            return null;
+        }
+        return snapshot.docs[0].data().longUrl as string;
+    } catch (error) {
+        console.error(`Error fetching long URL for ${shortId}:`, error);
+        return null; // Don't crash the redirect page
     }
-    return snapshot.docs[0].data().longUrl as string;
 }
 
 export async function getLinksByToken(anonymousToken: string): Promise<LinkWithAnalytics[]> {
     if (!anonymousToken) return [];
 
-    const linksRef = collection(db, 'links');
-    const q = query(linksRef, where('anonymousToken', '==', anonymousToken));
+    try {
+        const linksRef = collection(db, 'links');
+        const q = query(linksRef, where('anonymousToken', '==', anonymousToken));
 
-    const querySnapshot = await getDocs(q);
-    const links: LinkWithAnalytics[] = [];
+        const querySnapshot = await getDocs(q);
+        const links: LinkWithAnalytics[] = [];
 
-    for (const doc of querySnapshot.docs) {
-        const linkData = { id: doc.id, ...doc.data() } as LinkData;
-        
-        const analyticsRef = collection(db, 'analytics');
-        const analyticsQuery = query(analyticsRef, where('shortId', '==', linkData.shortId));
-        const clicksSnapshot = await getCountFromServer(analyticsQuery);
-        const clicks = clicksSnapshot.data().count;
+        for (const doc of querySnapshot.docs) {
+            const linkData = { id: doc.id, ...doc.data() } as LinkData;
+            
+            const analyticsRef = collection(db, 'analytics');
+            const analyticsQuery = query(analyticsRef, where('shortId', '==', linkData.shortId));
+            const clicksSnapshot = await getCountFromServer(analyticsQuery);
+            const clicks = clicksSnapshot.data().count;
 
-        links.push({ ...linkData, clicks });
+            links.push({ ...linkData, clicks });
+        }
+
+        return links.sort((a, b) => b.createdAt - a.createdAt);
+    } catch (error) {
+        console.error('Error fetching links by token:', error);
+        return []; // Return empty array on error to prevent dashboard crash
     }
-
-    return links.sort((a, b) => b.createdAt - a.createdAt);
 }
 
 // NOTE: Admin validation should be handled in the page component before calling admin actions.
 export async function getAllLinksAdmin(): Promise<LinkWithAnalytics[]> {
-    const linksRef = collection(db, 'links');
-    const querySnapshot = await getDocs(linksRef);
-    const links: LinkWithAnalytics[] = [];
+    try {
+        const linksRef = collection(db, 'links');
+        const querySnapshot = await getDocs(linksRef);
+        const links: LinkWithAnalytics[] = [];
 
-    for (const doc of querySnapshot.docs) {
-        const linkData = { id: doc.id, ...doc.data() } as LinkData;
+        for (const doc of querySnapshot.docs) {
+            const linkData = { id: doc.id, ...doc.data() } as LinkData;
 
-        const analyticsRef = collection(db, 'analytics');
-        const analyticsQuery = query(analyticsRef, where('shortId', '==', linkData.shortId));
-        const clicksSnapshot = await getCountFromServer(analyticsQuery);
-        const clicks = clicksSnapshot.data().count;
+            const analyticsRef = collection(db, 'analytics');
+            const analyticsQuery = query(analyticsRef, where('shortId', '==', linkData.shortId));
+            const clicksSnapshot = await getCountFromServer(analyticsQuery);
+            const clicks = clicksSnapshot.data().count;
 
-        links.push({ ...linkData, clicks });
+            links.push({ ...linkData, clicks });
+        }
+        
+        return links.sort((a, b) => b.createdAt - a.createdAt);
+    } catch(error) {
+        console.error('Error fetching all links for admin:', error);
+        return [];
     }
-    
-    return links.sort((a, b) => b.createdAt - a.createdAt);
 }
 
 export async function getLinkAnalyticsAdmin(shortId: string): Promise<{ link: LinkData | null, visits: Visit[] }> {
-    const linkQuery = query(collection(db, 'links'), where('shortId', '==', shortId));
-    const linkSnapshot = await getDocs(linkQuery);
+    try {
+        const linkQuery = query(collection(db, 'links'), where('shortId', '==', shortId));
+        const linkSnapshot = await getDocs(linkQuery);
 
-    if (linkSnapshot.empty) {
+        if (linkSnapshot.empty) {
+            return { link: null, visits: [] };
+        }
+
+        const link = { id: linkSnapshot.docs[0].id, ...linkSnapshot.docs[0].data() } as LinkData;
+        
+        const visits: Visit[] = [];
+        const visitsQuery = query(collection(db, 'analytics'), where('shortId', '==', shortId));
+        const visitsSnapshot = await getDocs(visitsQuery);
+        visitsSnapshot.forEach(doc => {
+            visits.push({ id: doc.id, ...doc.data() } as Visit);
+        });
+
+        return { link, visits: visits.sort((a, b) => b.visitedAt - a.visitedAt) };
+    } catch (error) {
+        console.error(`Error fetching analytics for ${shortId}:`, error);
         return { link: null, visits: [] };
     }
-
-    const link = { id: linkSnapshot.docs[0].id, ...linkSnapshot.docs[0].data() } as LinkData;
-    
-    const visits: Visit[] = [];
-    const visitsQuery = query(collection(db, 'analytics'), where('shortId', '==', shortId));
-    const visitsSnapshot = await getDocs(visitsQuery);
-    visitsSnapshot.forEach(doc => {
-        visits.push({ id: doc.id, ...doc.data() } as Visit);
-    });
-
-    return { link, visits: visits.sort((a, b) => b.visitedAt - a.visitedAt) };
 }
