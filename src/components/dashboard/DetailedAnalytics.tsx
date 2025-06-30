@@ -43,10 +43,10 @@ export function DetailedAnalytics({ link, visits }: DetailedAnalyticsProps) {
                             <TableHead>Browser & OS</TableHead>
                         </TableRow>
                     </TableHeader>
-                    <TableBody>
-                        {visits.length > 0 ? visits.map(visit => (
+                    {visits.length > 0 ? (
+                        visits.map(visit => (
                             <Collapsible asChild key={visit.id}>
-                                <>
+                                <TableBody>
                                     <CollapsibleTrigger asChild>
                                         <TableRow className="cursor-pointer group hover:bg-muted/50 data-[state=open]:bg-muted/50">
                                             <TableCell>
@@ -59,20 +59,22 @@ export function DetailedAnalytics({ link, visits }: DetailedAnalyticsProps) {
                                         </TableRow>
                                     </CollapsibleTrigger>
                                     <CollapsibleContent asChild>
-                                        <tr>
+                                        <TableRow>
                                             <TableCell colSpan={5} className="p-0">
                                                 <FingerprintDetail data={visit.visitorData} />
                                             </TableCell>
-                                        </tr>
+                                        </TableRow>
                                     </CollapsibleContent>
-                                </>
+                                </TableBody>
                             </Collapsible>
-                        )) : (
+                        ))
+                    ) : (
+                        <TableBody>
                             <TableRow>
                                 <TableCell colSpan={5} className="text-center h-24 text-muted-foreground">No visits recorded yet.</TableCell>
                             </TableRow>
-                        )}
-                    </TableBody>
+                        </TableBody>
+                    )}
                 </Table>
             </div>
         </div>
