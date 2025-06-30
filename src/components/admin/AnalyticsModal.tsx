@@ -5,7 +5,7 @@ import { format } from 'date-fns';
 import { LinkData, Visit } from '@/lib/types';
 import { getLinkAnalyticsAdmin } from '@/lib/actions';
 import { Button } from '@/components/ui/button';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogDescription } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Skeleton } from '@/components/ui/skeleton';
 import { BarChart2, ChevronDown, Globe, User } from 'lucide-react';
@@ -94,8 +94,8 @@ export function AnalyticsModal({ shortId }: { shortId: string }) {
                                             <TableHeader>
                                                 <TableRow>
                                                     <TableHead className="w-[50px]"></TableHead>
-                                                    <TableHead className="w-[180px]">Visited At</TableHead>
-                                                    <TableHead className="w-[140px]">IP Address</TableHead>
+                                                    <TableHead className="w-[150px]">Visited At</TableHead>
+                                                    <TableHead className="w-[130px]">IP Address</TableHead>
                                                     <TableHead className="w-[120px]">Country</TableHead>
                                                     <TableHead>Browser & OS</TableHead>
                                                 </TableRow>
@@ -108,10 +108,13 @@ export function AnalyticsModal({ shortId }: { shortId: string }) {
                                                                 <TableCell>
                                                                     <ChevronDown className="h-4 w-4 transition-transform duration-200 group-data-[state=open]:rotate-180" />
                                                                 </TableCell>
-                                                                <TableCell className="truncate">{format(new Date(visit.visitedAt), 'MMM d, yyyy, h:mm a')}</TableCell>
-                                                                <TableCell><code className="truncate block">{getVisitorPrimaryInfo(visit).ip}</code></TableCell>
-                                                                <TableCell className="truncate">{getVisitorPrimaryInfo(visit).country}</TableCell>
-                                                                <TableCell className="truncate">{getVisitorPrimaryInfo(visit).browser} on {getVisitorPrimaryInfo(visit).os}</TableCell>
+                                                                <TableCell>
+                                                                    <div>{format(new Date(visit.visitedAt), 'MMM d, yyyy')}</div>
+                                                                    <div className="text-xs text-muted-foreground">{format(new Date(visit.visitedAt), 'h:mm a')}</div>
+                                                                </TableCell>
+                                                                <TableCell><code className="block break-all">{getVisitorPrimaryInfo(visit).ip}</code></TableCell>
+                                                                <TableCell>{getVisitorPrimaryInfo(visit).country}</TableCell>
+                                                                <TableCell>{getVisitorPrimaryInfo(visit).browser} on {getVisitorPrimaryInfo(visit).os}</TableCell>
                                                             </TableRow>
                                                         </CollapsibleTrigger>
                                                         <CollapsibleContent asChild>
