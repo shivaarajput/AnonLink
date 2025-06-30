@@ -1,7 +1,6 @@
 'use client';
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Table, TableBody, TableCell, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
 
@@ -57,17 +56,13 @@ const DataRenderer = ({ data, level = 0 }: { data: any, level?: number }) => {
         }
 
         return (
-            <div className={cn("w-full mt-1", level > 0 && "pl-4 border-l")}>
-                <Table className="bg-transparent text-xs">
-                    <TableBody>
-                        {Object.entries(data).map(([key, value]) => (
-                            <TableRow key={key} className="hover:bg-muted/30">
-                                <TableCell className="font-medium py-1 px-2 capitalize align-top">{key.replace(/([A-Z])/g, ' $1')}</TableCell>
-                                <TableCell className="py-1 px-2"><DataRenderer data={value} level={level + 1} /></TableCell>
-                            </TableRow>
-                        ))}
-                    </TableBody>
-                </Table>
+            <div className={cn("w-full mt-1 space-y-1", level > 0 && "pl-2 border-l")}>
+                {Object.entries(data).map(([key, value]) => (
+                    <div key={key} className="flex flex-col sm:flex-row hover:bg-muted/30 rounded-md py-1 px-2 -mx-2">
+                        <div className="font-medium capitalize align-top text-muted-foreground sm:w-1/3 shrink-0">{key.replace(/([A-Z])/g, ' $1')}</div>
+                        <div className="sm:w-2/3 sm:pl-2"><DataRenderer data={value} level={level + 1} /></div>
+                    </div>
+                ))}
             </div>
         );
     }
@@ -95,24 +90,22 @@ export const FingerprintDetail = ({ data }: { data: any }) => {
         <div className="grid grid-cols-1 xl:grid-cols-2 gap-4 p-4 bg-muted/20">
             {sections.map(section => (
                  <Card key={section.title} className="flex flex-col bg-card/50 shadow-sm">
-                    <CardHeader className="py-3 px-4">
-                        <CardTitle className="text-sm font-semibold">{section.title}</CardTitle>
+                    <CardHeader className="py-3 px-4 border-b">
+                        <CardTitle className="text-base font-semibold">{section.title}</CardTitle>
                     </CardHeader>
                     <CardContent className="flex-grow text-xs p-0">
-                         <Table>
-                            <TableBody>
-                                {Object.entries(section.data).map(([key, value]) => (
-                                    <TableRow key={key} className="hover:bg-muted/30">
-                                        <TableCell className="font-medium w-2/5 md:w-1/3 capitalize align-top py-2 px-4">
-                                            {key.replace(/([A-Z])/g, ' $1')}
-                                        </TableCell>
-                                        <TableCell className="py-2 px-4">
-                                            <DataRenderer data={value} />
-                                        </TableCell>
-                                    </TableRow>
-                                ))}
-                            </TableBody>
-                        </Table>
+                        <div className="divide-y divide-border">
+                            {Object.entries(section.data).map(([key, value]) => (
+                                <div key={key} className="flex flex-col md:flex-row md:items-start py-3 px-4 hover:bg-muted/30">
+                                    <div className="font-medium w-full md:w-1/3 capitalize align-top shrink-0 text-foreground/80">
+                                        {key.replace(/([A-Z])/g, ' $1')}
+                                    </div>
+                                    <div className="w-full md:w-2/3 mt-1 md:mt-0">
+                                        <DataRenderer data={value} />
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
                     </CardContent>
                 </Card>
             ))}
