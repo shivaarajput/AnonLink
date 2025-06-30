@@ -88,9 +88,13 @@ export async function createShortLink(
   }
 }
 
-export async function logVisit(shortId: string, visitorData: any): Promise<{ success: boolean; error?: string }> {
+export async function logVisit(
+    shortId: string, 
+    visitorFingerprint: string,
+    visitorData: any
+): Promise<{ success: boolean; error?: string }> {
     try {
-        if(!shortId) return { success: false, error: 'Missing data' };
+        if(!shortId || !visitorFingerprint) return { success: false, error: 'Missing data' };
         
         const linksQuery = query(collection(db, 'links'), where('shortId', '==', shortId));
         const linkDocs = await getDocs(linksQuery);
@@ -103,6 +107,7 @@ export async function logVisit(shortId: string, visitorData: any): Promise<{ suc
         const visitData: Omit<Visit, 'id'> = {
             shortId,
             visitedAt: Date.now(),
+            visitorFingerprint,
             visitorData,
         };
 
