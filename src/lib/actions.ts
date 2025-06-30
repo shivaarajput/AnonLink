@@ -188,12 +188,14 @@ export async function getLinkAnalytics(shortId: string, anonymousToken?: string)
             return { link: null, visits: [] };
         }
         
-        const visits: Visit[] = [];
-        const visitsQuery = query(collection(db, 'analytics'), where('shortId', '==', shortId), orderBy('visitedAt', 'desc'));
+        // Simplified query for analytics to avoid needing a composite index.
+        const visitsQuery = query(collection(db, 'analytics'), where('shortId', '==', shortId));
         const visitsSnapshot = await getDocs(visitsQuery);
-        visitsSnapshot.forEach(doc => {
-            visits.push({ id: doc.id, ...doc.data() } as Visit);
-        });
+        
+        const visits = visitsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Visit));
+
+        // Sort the results in code instead of in the query.
+        visits.sort((a, b) => b.visitedAt - a.visitedAt);
 
         return { link: linkData, visits };
     } catch (error) {
