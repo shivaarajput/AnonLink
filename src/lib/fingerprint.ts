@@ -178,6 +178,36 @@ const getSoftwareData = async () => {
             resolve('Error checking fonts');
         }
     });
+    
+    const getClientHints = async () => {
+        if (!(navigator as any).userAgentData) {
+            return 'User-Agent Client Hints not supported';
+        }
+        try {
+            const hints = await (navigator as any).userAgentData.getHighEntropyValues([
+                'architecture',
+                'model',
+                'platformVersion',
+                'uaFullVersion',
+                'bitness',
+                'fullVersionList',
+                'wow64'
+            ]);
+            
+            // The object returned by getHighEntropyValues also includes low-entropy hints
+            // so we can just return the whole thing, which includes `platform`.
+            return {
+                ...hints,
+                brands: (navigator as any).userAgentData.brands,
+                mobile: (navigator as any).userAgentData.mobile,
+            };
+        } catch (error) {
+            if (error instanceof Error) {
+                return `Error getting client hints: ${error.message}`;
+            }
+            return 'Error getting client hints';
+        }
+    };
 
     return {
         os: await safeGet(() => (navigator as any).userAgentData?.platform || navigator.platform),
@@ -203,6 +233,7 @@ const getSoftwareData = async () => {
         fonts: await safeGet(getFonts),
         cookiesEnabled: await safeGet(() => navigator.cookieEnabled),
         doNotTrack: await safeGet(() => navigator.doNotTrack ?? 'N/A'),
+        clientHints: await safeGet(getClientHints),
     };
 };
 

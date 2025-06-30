@@ -37,24 +37,19 @@ export function AnalyticsModal({ shortId }: { shortId: string }) {
 
     const getVisitorPrimaryInfo = (visit: Visit) => {
         const data = visit.visitorData;
-        if (!data) return { ip: 'N/A', country: 'N/A', os: 'N/A', region: 'N/A', battery: 'N/A' };
+        if (!data) return { ip: 'N/A', country: 'N/A', os: 'N/A', region: 'N/A', model: 'N/A' };
         
         const ip = data.network?.public?.ip || data.network?.local || 'N/A';
         const country = data.network?.public?.country || 'Unknown';
-        const os = data.software?.os || 'Unknown';
+        
+        const platform = (data.software?.clientHints?.platform) || data.software?.os || 'Unknown';
+        const platformVersion = data.software?.clientHints?.platformVersion || '';
+        const os = `${platform} ${platformVersion}`.trim();
+        
         const region = data.network?.public?.region || 'N/A';
+        const model = data.software?.clientHints?.model || 'N/A';
 
-        let batteryInfo: string = 'N/A';
-        if (data.hardware?.battery && typeof data.hardware.battery === 'object') {
-            const battery = data.hardware.battery;
-            const level = Math.round(battery.level * 100);
-            const status = battery.charging ? 'Charging' : 'Discharging';
-            batteryInfo = `${level}% (${status})`;
-        } else if (typeof data.hardware?.battery === 'string') {
-            batteryInfo = data.hardware.battery;
-        }
-
-        return { ip, country, os, region, battery: batteryInfo };
+        return { ip, country, os, region, model };
     }
 
     return (
@@ -116,9 +111,9 @@ export function AnalyticsModal({ shortId }: { shortId: string }) {
                                                     </TableHead>
                                                     <TableHead className="p-2 hidden sm:table-cell sm:w-[25%] md:w-[20%] lg:w-[15%]">Country</TableHead>
                                                     <TableHead className="p-2 hidden md:table-cell md:w-[20%] lg:w-[15%]">Region</TableHead>
-                                                    <TableHead className="p-2 hidden lg:table-cell lg:w-[10%]">Battery</TableHead>
+                                                    <TableHead className="p-2 hidden lg:table-cell lg:w-[15%]">Device</TableHead>
                                                     <TableHead className="p-2 w-[30%] sm:w-[20%] md:w-[15%] lg:w-[15%]">OS</TableHead>
-                                                    <TableHead className="p-2 w-[35%] sm:w-[25%] md:w-[20%] lg:w-[25%]">IP Address</TableHead>
+                                                    <TableHead className="p-2 w-[35%] sm:w-[25%] md:w-[20%] lg:w-[20%]">IP Address</TableHead>
                                                 </TableRow>
                                             </TableHeader>
                                             {analytics.visits.length > 0 ? analytics.visits.map(visit => (
@@ -137,9 +132,9 @@ export function AnalyticsModal({ shortId }: { shortId: string }) {
                                                                         </div>
                                                                         <div className="hidden sm:block p-2 text-xs align-top w-[25%] md:w-[20%] lg:w-[15%]">{getVisitorPrimaryInfo(visit).country}</div>
                                                                         <div className="hidden md:block p-2 text-xs align-top w-[20%] lg:w-[15%]">{getVisitorPrimaryInfo(visit).region}</div>
-                                                                        <div className="hidden lg:block p-2 text-xs align-top w-[10%]">{getVisitorPrimaryInfo(visit).battery}</div>
+                                                                        <div className="hidden lg:block p-2 text-xs align-top w-[15%] truncate">{getVisitorPrimaryInfo(visit).model}</div>
                                                                         <div className="p-2 text-xs align-top truncate w-[30%] sm:w-[20%] md:w-[15%] lg:w-[15%]">{getVisitorPrimaryInfo(visit).os}</div>
-                                                                        <div className="p-2 text-xs align-top w-[35%] sm:w-[25%] md:w-[20%] lg:w-[25%]">
+                                                                        <div className="p-2 text-xs align-top w-[35%] sm:w-[25%] md:w-[20%] lg:w-[20%]">
                                                                             <code className="block break-all">{getVisitorPrimaryInfo(visit).ip}</code>
                                                                         </div>
                                                                     </div>
