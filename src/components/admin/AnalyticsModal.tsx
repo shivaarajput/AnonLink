@@ -16,12 +16,18 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/component
 export function AnalyticsModal({ shortId }: { shortId: string }) {
     const [analytics, setAnalytics] = useState<{ link: LinkData | null, visits: Visit[] } | null>(null);
     const [loading, setLoading] = useState(false);
+    const [analyticsCache, setAnalyticsCache] = useState<Record<string, { link: LinkData | null, visits: Visit[] }>>({});
 
     const fetchAnalytics = async () => {
+        if (analyticsCache[shortId]) {
+            setAnalytics(analyticsCache[shortId]);
+            return;
+        }
         setLoading(true);
         try {
             const data = await getLinkAnalytics(shortId);
             setAnalytics(data);
+            setAnalyticsCache(prev => ({ ...prev, [shortId]: data }));
         } catch (error) {
             console.error("Failed to fetch analytics", error);
         } finally {
@@ -52,7 +58,7 @@ export function AnalyticsModal({ shortId }: { shortId: string }) {
     }
 
     return (
-        <Dialog onOpenChange={(open) => { if (open && !analytics) fetchAnalytics(); }}>
+        <Dialog onOpenChange={(open) => { if (open) fetchAnalytics(); }}>
             <DialogTrigger asChild>
                 <Button variant="outline" size="sm" aria-label={`View analytics for /${shortId}`}>
                     <BarChart2 className="mr-2 h-4 w-4" />
@@ -104,12 +110,12 @@ export function AnalyticsModal({ shortId }: { shortId: string }) {
                                         <Table className="table-fixed w-full">
                                             <TableHeader>
                                                 <TableRow>
-                                                    <TableHead className="p-2 w-[35%] sm:w-[25%] lg:w-[18%]">Datetime</TableHead>
-                                                    <TableHead className="hidden sm:table-cell p-2 w-[25%] lg:w-[15%]">Country</TableHead>
-                                                    <TableHead className="hidden lg:table-cell p-2 w-[15%]">Region</TableHead>
-                                                    <TableHead className="p-2 w-[35%] sm:w-[20%] lg:w-[15%]">OS</TableHead>
-                                                    <TableHead className="hidden lg:table-cell p-2 w-[12%]">Battery</TableHead>
-                                                    <TableHead className="p-2 w-[30%] lg:w-[25%]">IP Address</TableHead>
+                                                    <TableHead className="p-2 w-[18%]">Datetime</TableHead>
+                                                    <TableHead className="hidden sm:table-cell p-2 w-[15%]">Country</TableHead>
+                                                    <TableHead className="hidden md:table-cell p-2 w-[15%]">Region</TableHead>
+                                                    <TableHead className="p-2 w-[15%]">OS</TableHead>
+                                                    <TableHead className="hidden md:table-cell p-2 w-[12%]">Battery</TableHead>
+                                                    <TableHead className="p-2 w-[25%]">IP Address</TableHead>
                                                 </TableRow>
                                             </TableHeader>
                                             {analytics.visits.length > 0 ? analytics.visits.map(visit => (
@@ -119,20 +125,26 @@ export function AnalyticsModal({ shortId }: { shortId: string }) {
                                                             <TableRow className="cursor-pointer group hover:bg-muted/50 data-[state=open]:bg-muted/50">
                                                                 <TableCell colSpan={6} className="p-0">
                                                                     <div className="flex w-full items-start">
-                                                                        <div className="p-2 text-xs w-[35%] sm:w-[25%] lg:w-[18%]">
+                                                                        {/* Datetime */}
+                                                                        <div className="p-2 text-xs align-top basis-1/3 sm:basis-auto sm:w-[18%]">
+                                                                            <span className="hidden lg:inline">{format(new Date(visit.visitedAt), 'MMM d, yyyy, p')}</span>
                                                                             <div className="lg:hidden">
-                                                                                <div>{format(new Date(visit.visitedAt), 'MMM d, yyyy')}</div>
+                                                                                <div>{format(new Date(visit.visitedAt), 'MMM d, yy')}</div>
                                                                                 <div className="text-muted-foreground">{format(new Date(visit.visitedAt), 'p')}</div>
                                                                             </div>
-                                                                            <div className="hidden lg:block">
-                                                                                {format(new Date(visit.visitedAt), 'MMM d, yyyy, p')}
-                                                                            </div>
                                                                         </div>
-                                                                        <div className="hidden sm:block p-2 text-xs w-[25%] lg:w-[15%]">{getVisitorPrimaryInfo(visit).country}</div>
-                                                                        <div className="hidden lg:block p-2 text-xs w-[15%]">{getVisitorPrimaryInfo(visit).region}</div>
-                                                                        <div className="p-2 text-xs truncate w-[35%] sm:w-[20%] lg:w-[15%]">{getVisitorPrimaryInfo(visit).os}</div>
-                                                                        <div className="hidden lg:block p-2 text-xs w-[12%]">{getVisitorPrimaryInfo(visit).battery}</div>
-                                                                        <div className="p-2 text-xs w-[30%] lg:w-[25%]"><code className="block break-all">{getVisitorPrimaryInfo(visit).ip}</code></div>
+                                                                        {/* Country */}
+                                                                        <div className="hidden sm:flex p-2 text-xs align-top w-[15%]">{getVisitorPrimaryInfo(visit).country}</div>
+                                                                        {/* Region */}
+                                                                        <div className="hidden md:flex p-2 text-xs align-top w-[15%]">{getVisitorPrimaryInfo(visit).region}</div>
+                                                                        {/* OS */}
+                                                                        <div className="flex p-2 text-xs align-top truncate basis-1/3 sm:basis-auto sm:w-[15%]">{getVisitorPrimaryInfo(visit).os}</div>
+                                                                        {/* Battery */}
+                                                                        <div className="hidden md:flex p-2 text-xs align-top w-[12%]">{getVisitorPrimaryInfo(visit).battery}</div>
+                                                                        {/* IP Address */}
+                                                                        <div className="flex p-2 text-xs align-top basis-1/3 sm:basis-auto sm:w-[25%]">
+                                                                            <code className="block break-all">{getVisitorPrimaryInfo(visit).ip}</code>
+                                                                        </div>
                                                                     </div>
                                                                 </TableCell>
                                                             </TableRow>

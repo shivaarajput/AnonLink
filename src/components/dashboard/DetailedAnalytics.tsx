@@ -43,7 +43,7 @@ export function DetailedAnalytics({ link, visits }: DetailedAnalyticsProps) {
                 <Globe className="h-5 w-5 text-primary" /> Visitor Details ({visits.length} clicks)
             </h3>
             <div className="rounded-md border bg-card">
-                <Table className="w-full">
+                <Table className="table-fixed w-full">
                     <TableHeader>
                         <TableRow>
                             <TableHead className="p-2 w-[18%]">Datetime</TableHead>
@@ -58,22 +58,30 @@ export function DetailedAnalytics({ link, visits }: DetailedAnalyticsProps) {
                         visits.map(visit => (
                             <Collapsible asChild key={visit.id}>
                                 <TableBody>
-                                    <CollapsibleTrigger asChild>
+                                     <CollapsibleTrigger asChild>
                                         <TableRow className="cursor-pointer group hover:bg-muted/50 data-[state=open]:bg-muted/50">
                                             <TableCell colSpan={6} className="p-0">
                                                 <div className="flex w-full items-start">
-                                                    <div className="p-2 text-xs w-full sm:w-[18%]">
+                                                    {/* Datetime */}
+                                                    <div className="p-2 text-xs align-top basis-1/3 sm:basis-auto sm:w-[18%]">
                                                         <span className="hidden lg:inline">{format(new Date(visit.visitedAt), 'MMM d, yyyy, p')}</span>
                                                         <div className="lg:hidden">
                                                             <div>{format(new Date(visit.visitedAt), 'MMM d, yy')}</div>
                                                             <div className="text-muted-foreground">{format(new Date(visit.visitedAt), 'p')}</div>
                                                         </div>
                                                     </div>
-                                                    <div className="hidden sm:block p-2 text-xs w-[15%]">{getVisitorPrimaryInfo(visit).country}</div>
-                                                    <div className="hidden md:block p-2 text-xs w-[15%]">{getVisitorPrimaryInfo(visit).region}</div>
-                                                    <div className="p-2 text-xs truncate w-full sm:w-[15%]">{getVisitorPrimaryInfo(visit).os}</div>
-                                                    <div className="hidden md:block p-2 text-xs w-[12%]">{getVisitorPrimaryInfo(visit).battery}</div>
-                                                    <div className="p-2 text-xs w-full sm:w-[25%]"><code className="block break-all">{getVisitorPrimaryInfo(visit).ip}</code></div>
+                                                    {/* Country */}
+                                                    <div className="hidden sm:flex p-2 text-xs align-top w-[15%]">{getVisitorPrimaryInfo(visit).country}</div>
+                                                    {/* Region */}
+                                                    <div className="hidden md:flex p-2 text-xs align-top w-[15%]">{getVisitorPrimaryInfo(visit).region}</div>
+                                                    {/* OS */}
+                                                    <div className="flex p-2 text-xs align-top truncate basis-1/3 sm:basis-auto sm:w-[15%]">{getVisitorPrimaryInfo(visit).os}</div>
+                                                    {/* Battery */}
+                                                    <div className="hidden md:flex p-2 text-xs align-top w-[12%]">{getVisitorPrimaryInfo(visit).battery}</div>
+                                                    {/* IP Address */}
+                                                    <div className="flex p-2 text-xs align-top basis-1/3 sm:basis-auto sm:w-[25%]">
+                                                        <code className="block break-all">{getVisitorPrimaryInfo(visit).ip}</code>
+                                                    </div>
                                                 </div>
                                             </TableCell>
                                         </TableRow>
