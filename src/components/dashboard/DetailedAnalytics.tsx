@@ -37,10 +37,10 @@ export function DetailedAnalytics({ link, visits }: DetailedAnalyticsProps) {
                     <TableHeader>
                         <TableRow>
                             <TableHead className="w-[5%] px-2"></TableHead>
-                            <TableHead className="px-2 w-[15%]">Visited At</TableHead>
-                            <TableHead className="px-2 w-[30%]">IP Address</TableHead>
-                            <TableHead className="px-2 w-[15%]">Country</TableHead>
-                            <TableHead className="px-2 w-[35%]">Browser & OS</TableHead>
+                            <TableHead className="px-2 w-[20%]">Datetime</TableHead>
+                            <TableHead className="px-2 w-[35%]">IP Address</TableHead>
+                            <TableHead className="px-2 w-[20%]">Country</TableHead>
+                            <TableHead className="px-2 w-[20%]">OS</TableHead>
                         </TableRow>
                     </TableHeader>
                     {visits.length > 0 ? (
@@ -59,7 +59,7 @@ export function DetailedAnalytics({ link, visits }: DetailedAnalyticsProps) {
                                             <TableCell className="p-2"><code className="block break-all text-xs">{getVisitorPrimaryInfo(visit).ip}</code></TableCell>
                                             <TableCell className="p-2 text-xs">{getVisitorPrimaryInfo(visit).country}</TableCell>
                                             <TableCell className="p-2 text-xs truncate">
-                                                {getVisitorPrimaryInfo(visit).browser} on {getVisitorPrimaryInfo(visit).os}
+                                                {getVisitorPrimaryInfo(visit).os}
                                             </TableCell>
                                         </TableRow>
                                     </CollapsibleTrigger>

@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { format } from 'date-fns';
 import { LinkData, Visit } from '@/lib/types';
-import { getLinkAnalyticsAdmin } from '@/lib/actions';
+import { getLinkAnalytics } from '@/lib/actions';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
@@ -20,7 +20,8 @@ export function AnalyticsModal({ shortId }: { shortId: string }) {
     const fetchAnalytics = async () => {
         setLoading(true);
         try {
-            const data = await getLinkAnalyticsAdmin(shortId);
+            // Admins can see analytics for any link without a token
+            const data = await getLinkAnalytics(shortId);
             setAnalytics(data);
         } catch (error) {
             console.error("Failed to fetch analytics", error);
@@ -33,7 +34,7 @@ export function AnalyticsModal({ shortId }: { shortId: string }) {
         const data = visit.visitorData;
         if (!data) return { ip: 'N/A', country: 'N/A', browser: 'N/A', os: 'N/A' };
         
-        const ip = data.network?.public?.ip || 'N/A';
+        const ip = data.network?.public?.ip || data.network?.local || 'N/A';
         const country = data.network?.public?.country || 'Unknown';
         const browser = data.software?.browser || 'Unknown';
         const os = data.software?.os || 'Unknown';
@@ -68,20 +69,22 @@ export function AnalyticsModal({ shortId }: { shortId: string }) {
                         </div>
                     ) : analytics && analytics.link ? (
                         <Accordion type="single" collapsible defaultValue="visitors" className="w-full">
-                            <AccordionItem value="creator">
-                                <AccordionTrigger className="text-lg font-semibold">
-                                    <div className="flex items-center gap-2">
-                                        <User className="h-5 w-5" /> Creator Details
-                                    </div>
-                                </AccordionTrigger>
-                                <AccordionContent>
-                                    <div className="mb-4 space-y-2 text-sm px-2">
-                                        <div><strong>Original URL:</strong> <a href={analytics.link.longUrl} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline break-all">{analytics.link.longUrl}</a></div>
-                                        <div><strong>Creator Fingerprint Hash:</strong> <code className="text-xs bg-muted p-1 rounded break-all">{analytics.link.creatorFingerprint}</code></div>
-                                    </div>
-                                    <FingerprintDetail data={analytics.link.creatorFingerprintData} />
-                                </AccordionContent>
-                            </AccordionItem>
+                            {analytics.link.anonymousToken && (
+                                <AccordionItem value="creator">
+                                    <AccordionTrigger className="text-lg font-semibold">
+                                        <div className="flex items-center gap-2">
+                                            <User className="h-5 w-5" /> Creator Details
+                                        </div>
+                                    </AccordionTrigger>
+                                    <AccordionContent>
+                                        <div className="mb-4 space-y-2 text-sm px-2">
+                                            <div><strong>Original URL:</strong> <a href={analytics.link.longUrl} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline break-all">{analytics.link.longUrl}</a></div>
+                                            <div><strong>Creator Token:</strong> <code className="text-xs bg-muted p-1 rounded break-all">{analytics.link.anonymousToken}</code></div>
+                                        </div>
+                                        {/* Creator fingerprint details could be added here if stored */}
+                                    </AccordionContent>
+                                </AccordionItem>
+                            )}
                             <AccordionItem value="visitors">
                                 <AccordionTrigger className="text-lg font-semibold">
                                     <div className="flex items-center gap-2">
@@ -94,10 +97,10 @@ export function AnalyticsModal({ shortId }: { shortId: string }) {
                                             <TableHeader>
                                                 <TableRow>
                                                     <TableHead className="w-[5%] px-2"></TableHead>
-                                                    <TableHead className="px-2 w-[15%]">Visited At</TableHead>
-                                                    <TableHead className="px-2 w-[30%]">IP Address</TableHead>
-                                                    <TableHead className="px-2 w-[15%]">Country</TableHead>
-                                                    <TableHead className="px-2 w-[35%]">Browser & OS</TableHead>
+                                                    <TableHead className="px-2 w-[20%]">Datetime</TableHead>
+                                                    <TableHead className="px-2 w-[35%]">IP Address</TableHead>
+                                                    <TableHead className="px-2 w-[20%]">Country</TableHead>
+                                                    <TableHead className="px-2 w-[20%]">OS</TableHead>
                                                 </TableRow>
                                             </TableHeader>
                                             {analytics.visits.length > 0 ? analytics.visits.map(visit => (
@@ -115,7 +118,7 @@ export function AnalyticsModal({ shortId }: { shortId: string }) {
                                                                 <TableCell className="p-2"><code className="block break-all text-xs">{getVisitorPrimaryInfo(visit).ip}</code></TableCell>
                                                                 <TableCell className="p-2 text-xs">{getVisitorPrimaryInfo(visit).country}</TableCell>
                                                                 <TableCell className="p-2 text-xs truncate">
-                                                                    {getVisitorPrimaryInfo(visit).browser} on {getVisitorPrimaryInfo(visit).os}
+                                                                    {getVisitorPrimaryInfo(visit).os}
                                                                 </TableCell>
                                                             </TableRow>
                                                         </CollapsibleTrigger>
