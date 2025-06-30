@@ -175,16 +175,16 @@ export default function DashboardPage() {
       </CardHeader>
       <CardContent>
         <div className="rounded-md border">
-          <Table>
+          <Table className="table-fixed">
             <TableHeader>
               <TableRow>
                 <TableHead className="w-[50px]"></TableHead>
                 <TableHead>Short Link</TableHead>
                 <TableHead className="hidden lg:table-cell">Original URL</TableHead>
-                <TableHead className="text-center">Clicks</TableHead>
+                <TableHead className="text-center w-[70px]">Clicks</TableHead>
                 {isAdmin && <TableHead className="hidden md:table-cell">Creator Token</TableHead>}
-                <TableHead className="hidden sm:table-cell text-center">Created</TableHead>
-                <TableHead className="text-right">Actions</TableHead>
+                <TableHead className="hidden sm:table-cell text-center w-[120px]">Created</TableHead>
+                <TableHead className="text-right w-[80px]">Actions</TableHead>
               </TableRow>
             </TableHeader>
             
@@ -205,15 +205,17 @@ export default function DashboardPage() {
                             <TableCell>
                               <ChevronDown className="h-4 w-4 transition-transform duration-200 data-[state=open]:rotate-180" />
                             </TableCell>
-                            <TableCell className="font-medium max-w-[20ch] sm:max-w-[40ch] truncate">
+                            <TableCell className="font-medium">
                                 <a href={`/${link.shortId}`} onClick={(e) => e.stopPropagation()} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline flex items-center gap-1.5">
-                                    {`${origin.replace(/https?:\/\//, '')}/${link.shortId}`}
-                                    <ExternalLink className="h-3 w-3" />
+                                    <span className="truncate">
+                                        {`${origin.replace(/https?:\/\//, '')}/${link.shortId}`}
+                                    </span>
+                                    <ExternalLink className="h-3 w-3 shrink-0" />
                                 </a>
                             </TableCell>
-                            <TableCell className="hidden lg:table-cell max-w-sm break-all">{link.longUrl}</TableCell>
+                            <TableCell className="hidden lg:table-cell break-all">{link.longUrl}</TableCell>
                             <TableCell className="text-center font-semibold">{link.clicks}</TableCell>
-                            {isAdmin && <TableCell className="hidden md:table-cell"><code className="text-xs bg-muted p-1 rounded">{link.anonymousToken.substring(0, 13)}...</code></TableCell>}
+                            {isAdmin && <TableCell className="hidden md:table-cell"><code className="text-xs bg-muted p-1 rounded break-all">{link.anonymousToken.substring(0, 13)}...</code></TableCell>}
                             <TableCell className="hidden sm:table-cell text-center text-muted-foreground">{format(new Date(link.createdAt), 'MMM d, yyyy')}</TableCell>
                             <TableCell className="text-right">
                               <Button variant="ghost" size="icon" onClick={(e) => handleCopy(e, link.shortId)} aria-label="Copy link">
