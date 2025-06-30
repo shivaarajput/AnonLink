@@ -33,6 +33,27 @@ const DataRenderer = ({ data, level = 0 }: { data: any, level?: number }) => {
             );
         }
         
+        const isSimpleObject = Object.values(data).every(v => v === null || typeof v !== 'object');
+
+        if (isSimpleObject) {
+             return (
+                <div className="space-y-1">
+                    {Object.entries(data).map(([key, value]) => {
+                        const finalValue = (key === 'level' && typeof value === 'number' && value <= 1)
+                            ? `${(value * 100).toFixed(0)}%`
+                            : value;
+
+                        return (
+                             <div key={key}>
+                                <span className="font-medium capitalize text-muted-foreground">{key.replace(/([A-Z])/g, ' $1')}:</span>{' '}
+                                <DataRenderer data={finalValue} level={level + 1} /> 
+                            </div>
+                        )
+                    })}
+                </div>
+            );
+        }
+
         return (
             <div className={cn("w-full mt-1", level > 0 && "pl-4 border-l")}>
                 <Table className="bg-transparent text-xs">
