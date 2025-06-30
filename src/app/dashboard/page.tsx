@@ -156,7 +156,6 @@ export default function DashboardPage() {
     e.stopPropagation();
     const url = `${origin}/${shortId}`;
     navigator.clipboard.writeText(url);
-    setCopiedLink(shortId);
     toast({ title: 'Copied to clipboard!' });
     setTimeout(() => setCopiedLink(null), 2000);
   };
@@ -200,12 +199,12 @@ export default function DashboardPage() {
       </CardHeader>
       <CardContent className="p-0 sm:p-2">
         <div className="rounded-md border">
-          <Table>
+          <Table className="table-fixed">
             <TableHeader>
               <TableRow>
                 <TableHead className="w-[50px]"></TableHead>
-                <TableHead>Short Link</TableHead>
-                <TableHead className="hidden lg:table-cell w-[300px]">Original URL</TableHead>
+                <TableHead className="w-[40%] lg:w-[25%]">Short Link</TableHead>
+                <TableHead className="hidden lg:table-cell w-[40%]">Original URL</TableHead>
                 <TableHead className="text-center w-[70px]">Clicks</TableHead>
                 {isAdmin && <TableHead className="hidden md:table-cell w-[150px]">Creator Token</TableHead>}
                 <TableHead className="hidden sm:table-cell text-center w-[120px]">Created</TableHead>
@@ -234,7 +233,7 @@ export default function DashboardPage() {
                               </Button>
                            </CollapsibleTrigger>
                         </TableCell>
-                        <TableCell className="font-medium">
+                        <TableCell className="font-medium truncate">
                             <a href={`/${link.shortId}`} onClick={(e) => e.stopPropagation()} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline flex items-center gap-1.5 min-w-0">
                                 <span className="truncate">
                                     {`${origin.replace(/https?:\/\//, '')}/${link.shortId}`}

@@ -107,15 +107,18 @@ export function AnalyticsModal({ shortId }: { shortId: string }) {
                                 </AccordionTrigger>
                                 <AccordionContent>
                                     <div className="rounded-md border">
-                                        <Table className="w-full">
+                                        <Table className="w-full table-fixed">
                                             <TableHeader>
                                                 <TableRow>
-                                                    <TableHead className="p-2 w-[35%] sm:w-[25%] lg:w-[18%]">Datetime</TableHead>
-                                                    <TableHead className="p-2 hidden sm:table-cell sm:w-[15%]">Country</TableHead>
-                                                    <TableHead className="p-2 hidden md:table-cell md:w-[15%]">Region</TableHead>
-                                                    <TableHead className="p-2 w-[35%] sm:w-[25%] lg:w-[15%]">OS</TableHead>
-                                                    <TableHead className="p-2 hidden md:table-cell md:w-[12%]">Battery</TableHead>
-                                                    <TableHead className="p-2 w-[30%] sm:w-[35%] lg:w-auto">IP Address</TableHead>
+                                                    <TableHead className="p-2 w-[35%] sm:w-[30%] md:w-[25%] lg:w-[20%]">
+                                                        <span className="lg:hidden">Datetime</span>
+                                                        <span className="hidden lg:inline whitespace-nowrap">Visited At</span>
+                                                    </TableHead>
+                                                    <TableHead className="p-2 hidden sm:table-cell sm:w-[25%] md:w-[20%] lg:w-[15%]">Country</TableHead>
+                                                    <TableHead className="p-2 hidden md:table-cell md:w-[20%] lg:w-[15%]">Region</TableHead>
+                                                    <TableHead className="p-2 hidden lg:table-cell lg:w-[10%]">Battery</TableHead>
+                                                    <TableHead className="p-2 w-[30%] sm:w-[20%] md:w-[15%] lg:w-[15%]">OS</TableHead>
+                                                    <TableHead className="p-2 w-[35%] sm:w-[25%] md:w-[20%] lg:w-[25%]">IP Address</TableHead>
                                                 </TableRow>
                                             </TableHeader>
                                             {analytics.visits.length > 0 ? analytics.visits.map(visit => (
@@ -125,18 +128,18 @@ export function AnalyticsModal({ shortId }: { shortId: string }) {
                                                             <CollapsibleTrigger asChild>
                                                                 <TableCell colSpan={6} className="p-0">
                                                                     <div className="flex w-full items-start">
-                                                                        <div className="p-2 text-xs align-top basis-1/3 sm:basis-auto w-[35%] sm:w-[25%] lg:w-[18%]">
+                                                                        <div className="p-2 text-xs align-top w-[35%] sm:w-[30%] md:w-[25%] lg:w-[20%]">
                                                                             <span className="hidden lg:inline whitespace-nowrap">{format(new Date(visit.visitedAt), 'MMM d, yyyy, p')}</span>
                                                                             <div className="lg:hidden">
-                                                                                <div>{format(new Date(visit.visitedAt), 'MMM d, yy')}</div>
+                                                                                <div>{format(new Date(visit.visitedAt), 'MMM d, yyyy')}</div>
                                                                                 <div className="text-muted-foreground">{format(new Date(visit.visitedAt), 'p')}</div>
                                                                             </div>
                                                                         </div>
-                                                                        <div className="hidden sm:flex p-2 text-xs align-top w-[15%]">{getVisitorPrimaryInfo(visit).country}</div>
-                                                                        <div className="hidden md:flex p-2 text-xs align-top w-[15%]">{getVisitorPrimaryInfo(visit).region}</div>
-                                                                        <div className="flex p-2 text-xs align-top truncate basis-1/3 sm:basis-auto w-[35%] sm:w-[25%] lg:w-[15%]">{getVisitorPrimaryInfo(visit).os}</div>
-                                                                        <div className="hidden md:flex p-2 text-xs align-top w-[12%]">{getVisitorPrimaryInfo(visit).battery}</div>
-                                                                        <div className="flex p-2 text-xs align-top basis-1/3 sm:basis-auto w-[30%] sm:w-[35%] lg:w-auto">
+                                                                        <div className="hidden sm:block p-2 text-xs align-top w-[25%] md:w-[20%] lg:w-[15%]">{getVisitorPrimaryInfo(visit).country}</div>
+                                                                        <div className="hidden md:block p-2 text-xs align-top w-[20%] lg:w-[15%]">{getVisitorPrimaryInfo(visit).region}</div>
+                                                                        <div className="hidden lg:block p-2 text-xs align-top w-[10%]">{getVisitorPrimaryInfo(visit).battery}</div>
+                                                                        <div className="p-2 text-xs align-top truncate w-[30%] sm:w-[20%] md:w-[15%] lg:w-[15%]">{getVisitorPrimaryInfo(visit).os}</div>
+                                                                        <div className="p-2 text-xs align-top w-[35%] sm:w-[25%] md:w-[20%] lg:w-[25%]">
                                                                             <code className="block break-all">{getVisitorPrimaryInfo(visit).ip}</code>
                                                                         </div>
                                                                     </div>
