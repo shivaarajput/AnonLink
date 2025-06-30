@@ -31,9 +31,8 @@ export default function AdminLoginPage() {
       if (user) {
         const isAdmin = await checkIsAdmin(user);
         if (isAdmin) {
-          router.replace('/dashboard'); // Redirect to the unified dashboard
+          router.replace('/dashboard');
         } else {
-          // If user is logged in but not an admin, sign them out before showing login
           await auth.signOut();
           setLoading(false);
         }
@@ -55,7 +54,7 @@ export default function AdminLoginPage() {
       const isAdmin = await checkIsAdmin(userCredential.user);
       if (isAdmin) {
         toast({ title: "Login successful!" });
-        router.push('/dashboard'); // Redirect to the unified dashboard
+        router.push('/dashboard');
       } else {
         await auth.signOut();
         toast({ title: "Access Denied", description: "You are not an administrator.", variant: "destructive" });

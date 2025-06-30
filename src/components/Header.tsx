@@ -10,8 +10,8 @@ import { cn } from '@/lib/utils';
 
 const navLinks = [
   { href: '/', label: 'Home' },
-  { href: '/dashboard', label: 'My Links' },
-  { href: '/admin/login', label: 'Admin' },
+  { href: '/dashboard', label: 'Dashboard' },
+  { href: '/admin/login', label: 'Admin Login' },
 ];
 
 export default function Header() {
@@ -41,7 +41,6 @@ export default function Header() {
           </nav>
         </div>
 
-        {/* Mobile Nav */}
         <div className="md:hidden flex items-center justify-between w-full">
            <Link href="/" className="flex items-center space-x-2">
             <LinkIcon className="h-6 w-6 text-primary" />

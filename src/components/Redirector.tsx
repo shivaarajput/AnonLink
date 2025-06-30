@@ -21,7 +21,6 @@ export default function Redirector({ longUrl, shortId }: RedirectorProps) {
         await logVisit(shortId, hash, data);
       } catch (error) {
         console.error('Failed to log visit:', error);
-        // We still redirect even if logging fails
       } finally {
         if (typeof window !== 'undefined') {
           window.location.replace(longUrl);
@@ -29,7 +28,6 @@ export default function Redirector({ longUrl, shortId }: RedirectorProps) {
       }
     };
 
-    // A small delay gives the fingerprinting script time to run.
     const timer = setTimeout(performRedirect, 500); 
 
     return () => clearTimeout(timer);

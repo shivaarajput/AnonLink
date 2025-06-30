@@ -4,20 +4,20 @@ export interface LinkData {
   shortId: string;
   longUrl: string;
   anonymousToken: string;
-  creatorFingerprint: string; // The hash
-  creatorFingerprintData?: any; // The full data object
+  creatorFingerprint: string;
+  creatorFingerprintData?: any;
   createdAt: number;
 }
 
 export interface Visit {
   id: string;
   shortId: string;
-  visitorFingerprint: string; // The hash
+  visitorFingerprint: string;
   visitedAt: number;
-  visitorData?: any; // The full data object
+  visitorData?: any;
 }
 
 export interface LinkWithAnalytics extends LinkData {
   clicks: number;
-  visits?: Visit[]; // Visits are optional as they are loaded on-demand
+  visits?: Visit[];
 }

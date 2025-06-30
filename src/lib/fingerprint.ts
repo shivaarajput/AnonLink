@@ -1,9 +1,6 @@
 
 'use client';
 
-// A comprehensive client-side fingerprinting utility.
-
-// Helper function to safely get a value, handling errors gracefully.
 const safeGet = async <T>(getter: () => T | Promise<T>): Promise<T | string> => {
   try {
     const value = await getter();
@@ -16,7 +13,6 @@ const safeGet = async <T>(getter: () => T | Promise<T>): Promise<T | string> => 
   }
 };
 
-// Category 1: Core Hardware & Performance
 const getHardwareData = async () => {
   const getGpu = () => {
     const canvas = document.createElement('canvas');
@@ -89,12 +85,11 @@ const getHardwareData = async () => {
             const sum = buffer.getChannelData(0).reduce((acc: number, val: number) => acc + Math.abs(val), 0);
             resolve(sum.toString());
         };
-        setTimeout(() => resolve('AudioContext timeout'), 500); // Failsafe timeout
+        setTimeout(() => resolve('AudioContext timeout'), 500);
      } catch (error) {
          resolve('Error generating audio fingerprint');
      }
   });
-
 
   return {
     gpu: await safeGet(getGpu),
@@ -106,7 +101,6 @@ const getHardwareData = async () => {
   };
 };
 
-// Category 2: Network & Geolocation
 const getNetworkData = async () => {
   const getPublicIp = async () => {
     try {
@@ -174,8 +168,6 @@ const getNetworkData = async () => {
   }
 };
 
-
-// Category 3: Browser & Software Environment
 const getSoftwareData = async () => {
     const getPlugins = () => {
       if (!navigator.plugins) return 'N/A';
@@ -227,7 +219,6 @@ const getSoftwareData = async () => {
     };
 };
 
-// Category 4: Display & Media Devices
 const getDisplayData = async () => {
     const getMediaDevices = async () => {
         if (!navigator.mediaDevices || !navigator.mediaDevices.enumerateDevices) {
@@ -235,7 +226,7 @@ const getDisplayData = async () => {
         }
         try {
             const devices = await navigator.mediaDevices.enumerateDevices();
-            return devices.map(d => ({ kind: d.kind, label: d.label ? 'yes' : 'no' })); // Don't expose full labels
+            return devices.map(d => ({ kind: d.kind, hasLabel: d.label ? 'yes' : 'no' }));
         } catch(e) {
             return 'Could not enumerate devices';
         }
@@ -252,9 +243,7 @@ const getDisplayData = async () => {
     };
 };
 
-// Main function to assemble the fingerprint
 export const getFingerprint = async (): Promise<{ hash: string, data: any }> => {
-  // Prevent execution on the server
   if (typeof window === 'undefined' || typeof document === 'undefined') {
     return { hash: 'server', data: { type: 'server' } };
   }
@@ -266,7 +255,6 @@ export const getFingerprint = async (): Promise<{ hash: string, data: any }> => 
     display: await getDisplayData(),
   };
 
-  // Create a stable JSON string for hashing
   const jsonString = JSON.stringify(data, Object.keys(data).sort());
   const hashBuffer = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(jsonString));
   const hashArray = Array.from(new Uint8Array(hashBuffer));

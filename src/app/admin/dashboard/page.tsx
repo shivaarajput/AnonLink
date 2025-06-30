@@ -5,10 +5,6 @@ import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { Loader2 } from 'lucide-react';
 
-/**
- * This page is now a redirector. 
- * All dashboard functionality has been merged into /dashboard.
- */
 export default function AdminDashboardRedirector() {
     const router = useRouter();
 

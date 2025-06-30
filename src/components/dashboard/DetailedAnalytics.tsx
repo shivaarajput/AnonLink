@@ -7,7 +7,7 @@ import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { FingerprintDetail } from '@/components/admin/FingerprintDetail';
-import { User, Globe, ChevronDown, Monitor, Cpu, Network, ScreenShare } from 'lucide-react';
+import { User, Globe, ChevronDown } from 'lucide-react';
 
 interface DetailedAnalyticsProps {
     link: LinkData;
@@ -20,7 +20,7 @@ export function DetailedAnalytics({ link, visits }: DetailedAnalyticsProps) {
         const data = visit.visitorData;
         if (!data) return { ip: 'N/A', country: 'N/A', browser: 'N/A', os: 'N/A' };
         
-        const ip = data.network?.public?.ip || visit.visitorData?.local || 'N/A';
+        const ip = data.network?.public?.ip || data.network?.local || 'N/A';
         const country = data.network?.public?.country || 'Unknown';
         const browser = data.software?.browser || 'Unknown';
         const os = data.software?.os || 'Unknown';
@@ -30,7 +30,7 @@ export function DetailedAnalytics({ link, visits }: DetailedAnalyticsProps) {
 
     return (
         <div className="p-4 bg-muted/30">
-            <Accordion type="multiple" defaultValue={['creator', 'visitors']} className="w-full">
+            <Accordion type="multiple" defaultValue={['visitors']} className="w-full">
                 <AccordionItem value="creator">
                     <AccordionTrigger className="text-base font-semibold hover:no-underline">
                         <div className="flex items-center gap-2">

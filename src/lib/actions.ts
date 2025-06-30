@@ -8,12 +8,12 @@ import {
   where,
   getDocs,
   getCountFromServer,
+  orderBy,
 } from 'firebase/firestore';
 import { db } from './firebase';
 import { LinkData, LinkWithAnalytics, Visit } from './types';
 import { revalidatePath } from 'next/cache';
 
-// Helper to get a more specific error message from a Firebase error
 function getFirebaseErrorMessage(error: unknown): string {
     if (error && typeof error === 'object' && 'code' in error) {
         const firebaseError = error as { code: string; message: string };
@@ -25,14 +25,12 @@ function getFirebaseErrorMessage(error: unknown): string {
             case 'unavailable':
                  return 'The service is currently unavailable. This could be a temporary issue with Firestore.';
             default:
-                return `An internal server error occurred.`;
+                return `An internal server error occurred: ${firebaseError.message}`;
         }
     }
     return 'An unexpected error occurred.';
 }
 
-
-// Helper to generate a random short ID
 function generateShortId(length = 7) {
   const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
   let result = '';
@@ -119,7 +117,7 @@ export async function getLongUrl(shortId: string): Promise<string | null> {
         return snapshot.docs[0].data().longUrl as string;
     } catch (error) {
         console.error(`Error fetching long URL for ${shortId}:`, error);
-        return null; // Don't crash the redirect page
+        return null;
     }
 }
 
@@ -128,7 +126,7 @@ export async function getLinksByToken(anonymousToken: string): Promise<LinkWithA
 
     try {
         const linksRef = collection(db, 'links');
-        const q = query(linksRef, where('anonymousToken', '==', anonymousToken));
+        const q = query(linksRef, where('anonymousToken', '==', anonymousToken), orderBy('createdAt', 'desc'));
 
         const querySnapshot = await getDocs(q);
         const links: LinkWithAnalytics[] = [];
@@ -144,18 +142,18 @@ export async function getLinksByToken(anonymousToken: string): Promise<LinkWithA
             links.push({ ...linkData, clicks });
         }
 
-        return links.sort((a, b) => b.createdAt - a.createdAt);
+        return links;
     } catch (error) {
         console.error('Error fetching links by token:', error);
-        return []; // Return empty array on error to prevent dashboard crash
+        return [];
     }
 }
 
-// NOTE: Admin validation should be handled in the page component before calling admin actions.
 export async function getAllLinksAdmin(): Promise<LinkWithAnalytics[]> {
     try {
         const linksRef = collection(db, 'links');
-        const querySnapshot = await getDocs(linksRef);
+        const q = query(linksRef, orderBy('createdAt', 'desc'));
+        const querySnapshot = await getDocs(q);
         const links: LinkWithAnalytics[] = [];
 
         for (const doc of querySnapshot.docs) {
@@ -169,7 +167,7 @@ export async function getAllLinksAdmin(): Promise<LinkWithAnalytics[]> {
             links.push({ ...linkData, clicks });
         }
         
-        return links.sort((a, b) => b.createdAt - a.createdAt);
+        return links;
     } catch(error) {
         console.error('Error fetching all links for admin:', error);
         return [];
@@ -188,13 +186,13 @@ export async function getLinkAnalytics(shortId: string): Promise<{ link: LinkDat
         const link = { id: linkSnapshot.docs[0].id, ...linkSnapshot.docs[0].data() } as LinkData;
         
         const visits: Visit[] = [];
-        const visitsQuery = query(collection(db, 'analytics'), where('shortId', '==', shortId));
+        const visitsQuery = query(collection(db, 'analytics'), where('shortId', '==', shortId), orderBy('visitedAt', 'desc'));
         const visitsSnapshot = await getDocs(visitsQuery);
         visitsSnapshot.forEach(doc => {
             visits.push({ id: doc.id, ...doc.data() } as Visit);
         });
 
-        return { link, visits: visits.sort((a, b) => b.visitedAt - a.visitedAt) };
+        return { link, visits };
     } catch (error) {
         console.error(`Error fetching analytics for ${shortId}:`, error);
         return { link: null, visits: [] };

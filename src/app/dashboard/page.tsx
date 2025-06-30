@@ -58,7 +58,7 @@ export default function DashboardPage() {
   }, []);
 
   useEffect(() => {
-    if (authLoading) return; // Wait for auth check to complete
+    if (authLoading) return;
 
     const fetchLinks = async () => {
       setLinksLoading(true);
