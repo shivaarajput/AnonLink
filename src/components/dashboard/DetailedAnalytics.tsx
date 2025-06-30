@@ -1,4 +1,3 @@
-
 'use client';
 
 import { format } from 'date-fns';
@@ -6,7 +5,7 @@ import { LinkData, Visit } from '@/lib/types';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { FingerprintDetail } from '@/components/admin/FingerprintDetail';
-import { Globe, ChevronDown } from 'lucide-react';
+import { Globe } from 'lucide-react';
 
 interface DetailedAnalyticsProps {
     link: LinkData;
@@ -17,14 +16,13 @@ export function DetailedAnalytics({ link, visits }: DetailedAnalyticsProps) {
 
     const getVisitorPrimaryInfo = (visit: Visit) => {
         const data = visit.visitorData;
-        if (!data) return { ip: 'N/A', country: 'N/A', browser: 'N/A', os: 'N/A' };
+        if (!data) return { ip: 'N/A', country: 'N/A', os: 'N/A' };
         
         const ip = data.network?.public?.ip || data.network?.local || 'N/A';
         const country = data.network?.public?.country || 'Unknown';
-        const browser = data.software?.browser || 'Unknown';
         const os = data.software?.os || 'Unknown';
 
-        return { ip, country, browser, os };
+        return { ip, country, os };
     }
 
     return (
@@ -36,10 +34,9 @@ export function DetailedAnalytics({ link, visits }: DetailedAnalyticsProps) {
                 <Table className="table-fixed w-full">
                     <TableHeader>
                         <TableRow>
-                            <TableHead className="w-[5%] px-2"></TableHead>
-                            <TableHead className="px-2 w-[20%]">Datetime</TableHead>
-                            <TableHead className="px-2 w-[35%]">IP Address</TableHead>
-                            <TableHead className="px-2 w-[20%]">Country</TableHead>
+                            <TableHead className="px-2 w-[25%]">Datetime</TableHead>
+                            <TableHead className="px-2 w-[40%]">IP Address</TableHead>
+                            <TableHead className="px-2 w-[15%]">Country</TableHead>
                             <TableHead className="px-2 w-[20%]">OS</TableHead>
                         </TableRow>
                     </TableHeader>
@@ -49,9 +46,6 @@ export function DetailedAnalytics({ link, visits }: DetailedAnalyticsProps) {
                                 <TableBody>
                                     <CollapsibleTrigger asChild>
                                         <TableRow className="cursor-pointer group hover:bg-muted/50 data-[state=open]:bg-muted/50">
-                                            <TableCell className="p-2 pl-4">
-                                                <ChevronDown className="h-4 w-4 transition-transform duration-200 group-data-[state=open]:rotate-180" />
-                                            </TableCell>
                                             <TableCell className="p-2 align-top text-xs">
                                                 <div>{format(new Date(visit.visitedAt), 'MMM d, yyyy')}</div>
                                                 <div className="text-muted-foreground">{format(new Date(visit.visitedAt), 'h:mm a')}</div>
@@ -65,7 +59,7 @@ export function DetailedAnalytics({ link, visits }: DetailedAnalyticsProps) {
                                     </CollapsibleTrigger>
                                     <CollapsibleContent asChild>
                                         <TableRow>
-                                            <TableCell colSpan={5} className="p-0">
+                                            <TableCell colSpan={4} className="p-0">
                                                 <FingerprintDetail data={visit.visitorData} />
                                             </TableCell>
                                         </TableRow>
@@ -76,7 +70,7 @@ export function DetailedAnalytics({ link, visits }: DetailedAnalyticsProps) {
                     ) : (
                         <TableBody>
                             <TableRow>
-                                <TableCell colSpan={5} className="text-center h-24 text-muted-foreground">No visits recorded yet.</TableCell>
+                                <TableCell colSpan={4} className="text-center h-24 text-muted-foreground">No visits recorded yet.</TableCell>
                             </TableRow>
                         </TableBody>
                     )}

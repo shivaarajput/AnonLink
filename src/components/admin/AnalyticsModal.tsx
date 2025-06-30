@@ -1,4 +1,3 @@
-
 'use client';
 import { useState } from 'react';
 import { format } from 'date-fns';
@@ -8,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Skeleton } from '@/components/ui/skeleton';
-import { BarChart2, ChevronDown, Globe, User } from 'lucide-react';
+import { BarChart2, Globe, User } from 'lucide-react';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { FingerprintDetail } from './FingerprintDetail';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
@@ -36,10 +35,9 @@ export function AnalyticsModal({ shortId }: { shortId: string }) {
         
         const ip = data.network?.public?.ip || data.network?.local || 'N/A';
         const country = data.network?.public?.country || 'Unknown';
-        const browser = data.software?.browser || 'Unknown';
         const os = data.software?.os || 'Unknown';
 
-        return { ip, country, browser, os };
+        return { ip, country, os };
     }
 
     return (
@@ -96,10 +94,9 @@ export function AnalyticsModal({ shortId }: { shortId: string }) {
                                         <Table className="table-fixed w-full">
                                             <TableHeader>
                                                 <TableRow>
-                                                    <TableHead className="w-[5%] px-2"></TableHead>
-                                                    <TableHead className="px-2 w-[20%]">Datetime</TableHead>
-                                                    <TableHead className="px-2 w-[35%]">IP Address</TableHead>
-                                                    <TableHead className="px-2 w-[20%]">Country</TableHead>
+                                                    <TableHead className="px-2 w-[25%]">Datetime</TableHead>
+                                                    <TableHead className="px-2 w-[40%]">IP Address</TableHead>
+                                                    <TableHead className="px-2 w-[15%]">Country</TableHead>
                                                     <TableHead className="px-2 w-[20%]">OS</TableHead>
                                                 </TableRow>
                                             </TableHeader>
@@ -108,9 +105,6 @@ export function AnalyticsModal({ shortId }: { shortId: string }) {
                                                     <TableBody>
                                                         <CollapsibleTrigger asChild className="group">
                                                             <TableRow className="cursor-pointer">
-                                                                <TableCell className="p-2 pl-4">
-                                                                    <ChevronDown className="h-4 w-4 transition-transform duration-200 group-data-[state=open]:rotate-180" />
-                                                                </TableCell>
                                                                 <TableCell className="p-2 align-top text-xs">
                                                                     <div>{format(new Date(visit.visitedAt), 'MMM d, yyyy')}</div>
                                                                     <div className="text-muted-foreground">{format(new Date(visit.visitedAt), 'h:mm a')}</div>
@@ -124,7 +118,7 @@ export function AnalyticsModal({ shortId }: { shortId: string }) {
                                                         </CollapsibleTrigger>
                                                         <CollapsibleContent asChild>
                                                             <TableRow>
-                                                                <TableCell colSpan={5} className="p-0">
+                                                                <TableCell colSpan={4} className="p-0">
                                                                     <FingerprintDetail data={visit.visitorData} />
                                                                 </TableCell>
                                                             </TableRow>
@@ -134,7 +128,7 @@ export function AnalyticsModal({ shortId }: { shortId: string }) {
                                             )) : (
                                                 <TableBody>
                                                     <TableRow>
-                                                        <TableCell colSpan={5} className="text-center h-24">No visits recorded yet.</TableCell>
+                                                        <TableCell colSpan={4} className="text-center h-24">No visits recorded yet.</TableCell>
                                                     </TableRow>
                                                 </TableBody>
                                             )}

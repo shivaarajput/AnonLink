@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useEffect, useState, useMemo } from 'react';
@@ -20,7 +19,7 @@ import {
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
-import { Clipboard, Check, ExternalLink, ChevronDown, LogOut, Loader2, User as UserIcon, Shield } from 'lucide-react';
+import { Clipboard, Check, ExternalLink, ChevronDown, ChevronUp, LogOut, Loader2, User as UserIcon, Shield } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { format } from 'date-fns';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -203,7 +202,7 @@ export default function DashboardPage() {
                     <CollapsibleTrigger asChild>
                         <TableRow className="cursor-pointer hover:bg-muted/50 data-[state=open]:bg-muted/50">
                             <TableCell>
-                              <ChevronDown className="h-4 w-4 transition-transform duration-200 data-[state=open]:rotate-180" />
+                              {expandedLink?.id === link.id ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
                             </TableCell>
                             <TableCell className="font-medium">
                                 <a href={`/${link.shortId}`} onClick={(e) => e.stopPropagation()} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline flex items-center gap-1.5">
