@@ -97,7 +97,7 @@ export function AnalyticsModal({ shortId }: { shortId: string }) {
                                                     <TableHead className="px-2 w-[110px]">Visited At</TableHead>
                                                     <TableHead className="px-2 w-[120px] sm:w-[200px]">IP Address</TableHead>
                                                     <TableHead className="px-2 w-[100px]">Country</TableHead>
-                                                    <TableHead className="px-2">Browser & OS</TableHead>
+                                                    <TableHead className="px-2 w-full">Browser & OS</TableHead>
                                                 </TableRow>
                                             </TableHeader>
                                             {analytics.visits.length > 0 ? analytics.visits.map(visit => (

@@ -179,8 +179,8 @@ export default function DashboardPage() {
             <TableHeader>
               <TableRow>
                 <TableHead className="w-[50px]"></TableHead>
-                <TableHead>Short Link</TableHead>
-                <TableHead className="hidden lg:table-cell">Original URL</TableHead>
+                <TableHead className="w-full">Short Link</TableHead>
+                <TableHead className="hidden lg:table-cell w-full">Original URL</TableHead>
                 <TableHead className="text-center w-[70px]">Clicks</TableHead>
                 {isAdmin && <TableHead className="hidden md:table-cell">Creator Token</TableHead>}
                 <TableHead className="hidden sm:table-cell text-center w-[120px]">Created</TableHead>
