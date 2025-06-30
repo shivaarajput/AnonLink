@@ -15,13 +15,6 @@ export interface Visit {
   visitorFingerprint: string; // The hash
   visitedAt: number;
   visitorData?: any; // The full data object
-
-  // Extracted, simplified data for quick analytics on the user dashboard
-  browser?: string;
-  os?: string;
-  country?: string;
-  isp?: string;
-  gpuRenderer?: string;
 }
 
 export interface LinkWithAnalytics extends LinkData {
