@@ -2,7 +2,14 @@
 
 import Link from 'next/link';
 import { Button } from './ui/button';
-import { Sheet, SheetContent, SheetTrigger } from './ui/sheet';
+import {
+  Sheet,
+  SheetContent,
+  SheetDescription,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from './ui/sheet';
 import { Menu, Link as LinkIcon } from 'lucide-react';
 import { usePathname } from 'next/navigation';
 import { cn } from '@/lib/utils';
@@ -51,6 +58,12 @@ export default function Header() {
                 </Button>
               </SheetTrigger>
               <SheetContent side="right">
+                <SheetHeader className="sr-only">
+                  <SheetTitle>Menu</SheetTitle>
+                  <SheetDescription>
+                    Site navigation links
+                  </SheetDescription>
+                </SheetHeader>
                 <nav className="flex flex-col gap-4 mt-8">
                   <Link href="/" className="flex items-center gap-2 text-lg font-bold text-primary mb-4">
                       <LinkIcon className="h-6 w-6" />
