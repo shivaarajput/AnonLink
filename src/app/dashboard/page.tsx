@@ -162,65 +162,68 @@ export default function DashboardPage() {
                 <TableHead className="text-right">Actions</TableHead>
               </TableRow>
             </TableHeader>
-            <TableBody>
-              {linksLoading ? (
-                Array.from({ length: 3 }).map((_, i) => (
+            
+            {linksLoading ? (
+              <TableBody>
+                {Array.from({ length: 3 }).map((_, i) => (
                   <TableRow key={i}>
                     <TableCell colSpan={isAdmin ? 7 : 6}><Skeleton className="h-8 w-full" /></TableCell>
                   </TableRow>
-                ))
-              ) : links.length > 0 ? (
-                links.map(link => (
-                  <Collapsible asChild key={link.id} open={expandedLink?.id === link.id} onOpenChange={() => handleToggleExpand(link.shortId, link.id)}>
-                    <>
-                      <CollapsibleTrigger asChild>
-                          <TableRow className="cursor-pointer hover:bg-muted/50 data-[state=open]:bg-muted/50">
-                              <TableCell>
-                                <ChevronDown className="h-4 w-4 transition-transform duration-200 data-[state=open]:rotate-180" />
-                              </TableCell>
-                              <TableCell className="font-medium">
-                                  <a href={`/${link.shortId}`} onClick={(e) => e.stopPropagation()} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline flex items-center gap-1.5">
-                                      {`${origin.replace(/https?:\/\//, '')}/${link.shortId}`}
-                                      <ExternalLink className="h-3 w-3" />
-                                  </a>
-                              </TableCell>
-                              <TableCell className="hidden lg:table-cell truncate max-w-sm">{link.longUrl}</TableCell>
-                              <TableCell className="text-center font-semibold">{link.clicks}</TableCell>
-                              {isAdmin && <TableCell className="hidden md:table-cell"><code className="text-xs bg-muted p-1 rounded">{link.anonymousToken.substring(0, 13)}...</code></TableCell>}
-                              <TableCell className="hidden sm:table-cell text-center text-muted-foreground">{format(new Date(link.createdAt), 'MMM d, yyyy')}</TableCell>
-                              <TableCell className="text-right">
-                                <Button variant="ghost" size="icon" onClick={(e) => handleCopy(e, link.shortId)} aria-label="Copy link">
-                                  {copiedLink === link.shortId ? <Check className="h-4 w-4 text-green-600" /> : <Clipboard className="h-4 w-4" />}
-                                </Button>
-                              </TableCell>
-                          </TableRow>
-                      </CollapsibleTrigger>
-                      <CollapsibleContent asChild>
-                          <TableRow className="bg-background">
-                              <TableCell colSpan={isAdmin ? 7 : 6} className="p-0">
-                                  {expandedLink?.loading && expandedLink.id === link.id && (
-                                    <div className="flex items-center justify-center p-8 gap-2">
-                                      <Loader2 className="h-5 w-5 animate-spin" />
-                                      <span className="text-muted-foreground">Loading Analytics...</span>
-                                    </div>
-                                  )}
-                                  {expandedLink?.data && expandedLink.id === link.id && (
-                                    <DetailedAnalytics link={expandedLink.data.link} visits={expandedLink.data.visits} />
-                                  )}
-                              </TableCell>
-                          </TableRow>
-                      </CollapsibleContent>
-                    </>
-                  </Collapsible>
-                ))
-              ) : (
+                ))}
+              </TableBody>
+            ) : links.length > 0 ? (
+              links.map(link => (
+                <Collapsible asChild key={link.id} open={expandedLink?.id === link.id} onOpenChange={() => handleToggleExpand(link.shortId, link.id)}>
+                  <TableBody>
+                    <CollapsibleTrigger asChild>
+                        <TableRow className="cursor-pointer hover:bg-muted/50 data-[state=open]:bg-muted/50">
+                            <TableCell>
+                              <ChevronDown className="h-4 w-4 transition-transform duration-200 data-[state=open]:rotate-180" />
+                            </TableCell>
+                            <TableCell className="font-medium">
+                                <a href={`/${link.shortId}`} onClick={(e) => e.stopPropagation()} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline flex items-center gap-1.5">
+                                    {`${origin.replace(/https?:\/\//, '')}/${link.shortId}`}
+                                    <ExternalLink className="h-3 w-3" />
+                                </a>
+                            </TableCell>
+                            <TableCell className="hidden lg:table-cell truncate max-w-sm">{link.longUrl}</TableCell>
+                            <TableCell className="text-center font-semibold">{link.clicks}</TableCell>
+                            {isAdmin && <TableCell className="hidden md:table-cell"><code className="text-xs bg-muted p-1 rounded">{link.anonymousToken.substring(0, 13)}...</code></TableCell>}
+                            <TableCell className="hidden sm:table-cell text-center text-muted-foreground">{format(new Date(link.createdAt), 'MMM d, yyyy')}</TableCell>
+                            <TableCell className="text-right">
+                              <Button variant="ghost" size="icon" onClick={(e) => handleCopy(e, link.shortId)} aria-label="Copy link">
+                                {copiedLink === link.shortId ? <Check className="h-4 w-4 text-green-600" /> : <Clipboard className="h-4 w-4" />}
+                              </Button>
+                            </TableCell>
+                        </TableRow>
+                    </CollapsibleTrigger>
+                    <CollapsibleContent asChild>
+                        <TableRow className="bg-background">
+                            <TableCell colSpan={isAdmin ? 7 : 6} className="p-0">
+                                {expandedLink?.loading && expandedLink.id === link.id && (
+                                  <div className="flex items-center justify-center p-8 gap-2">
+                                    <Loader2 className="h-5 w-5 animate-spin" />
+                                    <span className="text-muted-foreground">Loading Analytics...</span>
+                                  </div>
+                                )}
+                                {expandedLink?.data && expandedLink.id === link.id && (
+                                  <DetailedAnalytics link={expandedLink.data.link} visits={expandedLink.data.visits} />
+                                )}
+                            </TableCell>
+                        </TableRow>
+                    </CollapsibleContent>
+                  </TableBody>
+                </Collapsible>
+              ))
+            ) : (
+              <TableBody>
                 <TableRow>
                   <TableCell colSpan={isAdmin ? 7 : 6} className="text-center h-24 text-muted-foreground">
                     You haven't created any links yet.
                   </TableCell>
                 </TableRow>
-              )}
-            </TableBody>
+              </TableBody>
+            )}
           </Table>
         </div>
       </CardContent>
