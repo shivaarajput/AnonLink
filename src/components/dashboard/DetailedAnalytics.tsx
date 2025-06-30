@@ -45,38 +45,40 @@ export function DetailedAnalytics({ link, visits }: DetailedAnalyticsProps) {
                 <Table className="table-fixed w-full">
                     <TableHeader>
                         <TableRow>
-                            <TableHead className="p-2 w-[18%]">Datetime</TableHead>
-                            <TableHead className="hidden md:table-cell p-2 w-[15%]">Country</TableHead>
+                            <TableHead className="p-2 w-[35%] sm:w-[25%] lg:w-[18%]">Datetime</TableHead>
+                            <TableHead className="hidden sm:table-cell p-2 w-[25%] lg:w-[15%]">Country</TableHead>
                             <TableHead className="hidden lg:table-cell p-2 w-[15%]">Region</TableHead>
-                            <TableHead className="p-2 w-[15%]">OS</TableHead>
+                            <TableHead className="p-2 w-[35%] sm:w-[20%] lg:w-[15%]">OS</TableHead>
                             <TableHead className="hidden lg:table-cell p-2 w-[12%]">Battery</TableHead>
-                            <TableHead className="p-2 w-[25%]">IP Address</TableHead>
+                            <TableHead className="p-2 w-[30%] lg:w-[25%]">IP Address</TableHead>
                         </TableRow>
                     </TableHeader>
                     {visits.length > 0 ? (
                         visits.map(visit => (
                             <Collapsible asChild key={visit.id}>
                                 <TableBody>
-                                    <CollapsibleTrigger asChild>
-                                        <TableRow className="cursor-pointer group hover:bg-muted/50 data-[state=open]:bg-muted/50">
-                                            <TableCell className="p-2 align-top text-xs">
-                                                <div className="lg:hidden">
-                                                    <div>{format(new Date(visit.visitedAt), 'MMM d, yyyy')}</div>
-                                                    <div className="text-muted-foreground">{format(new Date(visit.visitedAt), 'p')}</div>
-                                                </div>
-                                                <div className="hidden lg:block truncate">
-                                                    {format(new Date(visit.visitedAt), 'MMM d, yyyy, p')}
-                                                </div>
-                                            </TableCell>
-                                            <TableCell className="hidden md:table-cell p-2 text-xs">{getVisitorPrimaryInfo(visit).country}</TableCell>
-                                            <TableCell className="hidden lg:table-cell p-2 text-xs">{getVisitorPrimaryInfo(visit).region}</TableCell>
-                                            <TableCell className="p-2 text-xs truncate">
-                                                {getVisitorPrimaryInfo(visit).os}
-                                            </TableCell>
-                                            <TableCell className="hidden lg:table-cell p-2 text-xs">{getVisitorPrimaryInfo(visit).battery}</TableCell>
-                                            <TableCell className="p-2 text-xs"><code className="block break-all">{getVisitorPrimaryInfo(visit).ip}</code></TableCell>
-                                        </TableRow>
-                                    </CollapsibleTrigger>
+                                    <TableRow className="cursor-pointer group hover:bg-muted/50 data-[state=open]:bg-muted/50" data-state="closed">
+                                        <CollapsibleTrigger asChild>
+                                            <>
+                                                <TableCell className="p-2 align-top text-xs w-[35%] sm:w-[25%] lg:w-[18%]">
+                                                    <div className="lg:hidden">
+                                                        <div>{format(new Date(visit.visitedAt), 'MMM d, yyyy')}</div>
+                                                        <div className="text-muted-foreground">{format(new Date(visit.visitedAt), 'p')}</div>
+                                                    </div>
+                                                    <div className="hidden lg:block">
+                                                        {format(new Date(visit.visitedAt), 'MMM d, yyyy, p')}
+                                                    </div>
+                                                </TableCell>
+                                                <TableCell className="hidden sm:table-cell p-2 text-xs w-[25%] lg:w-[15%]">{getVisitorPrimaryInfo(visit).country}</TableCell>
+                                                <TableCell className="hidden lg:table-cell p-2 text-xs w-[15%]">{getVisitorPrimaryInfo(visit).region}</TableCell>
+                                                <TableCell className="p-2 text-xs truncate w-[35%] sm:w-[20%] lg:w-[15%]">
+                                                    {getVisitorPrimaryInfo(visit).os}
+                                                </TableCell>
+                                                <TableCell className="hidden lg:table-cell p-2 text-xs w-[12%]">{getVisitorPrimaryInfo(visit).battery}</TableCell>
+                                                <TableCell className="p-2 text-xs w-[30%] lg:w-[25%]"><code className="block break-all">{getVisitorPrimaryInfo(visit).ip}</code></TableCell>
+                                            </>
+                                        </CollapsibleTrigger>
+                                    </TableRow>
                                     <CollapsibleContent asChild>
                                         <TableRow>
                                             <TableCell colSpan={6} className="p-0">
