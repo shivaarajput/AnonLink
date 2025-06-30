@@ -1,4 +1,3 @@
-
 'use client';
 import { useState } from 'react';
 import { format } from 'date-fns';
@@ -105,18 +104,18 @@ export function AnalyticsModal({ shortId }: { shortId: string }) {
                                         <Table className="table-fixed w-full">
                                             <TableHeader>
                                                 <TableRow>
-                                                    <TableHead className="px-2 w-[25%] lg:w-[20%]">Datetime</TableHead>
-                                                    <TableHead className="px-2 w-[40%] lg:w-[25%]">IP Address</TableHead>
-                                                    <TableHead className="hidden lg:table-cell px-2 lg:w-[12%]">Country</TableHead>
-                                                    <TableHead className="hidden lg:table-cell px-2 lg:w-[13%]">Region</TableHead>
-                                                    <TableHead className="px-2 w-[35%] lg:w-[15%]">OS</TableHead>
-                                                    <TableHead className="hidden lg:table-cell px-2 lg:w-[15%]">Battery</TableHead>
+                                                    <TableHead className="px-2 w-[18%]">Datetime</TableHead>
+                                                    <TableHead className="hidden md:table-cell px-2 w-[15%]">Country</TableHead>
+                                                    <TableHead className="hidden lg:table-cell px-2 w-[15%]">Region</TableHead>
+                                                    <TableHead className="px-2 w-[15%]">OS</TableHead>
+                                                    <TableHead className="hidden lg:table-cell px-2 w-[12%]">Battery</TableHead>
+                                                    <TableHead className="px-2 w-[25%]">IP Address</TableHead>
                                                 </TableRow>
                                             </TableHeader>
                                             {analytics.visits.length > 0 ? analytics.visits.map(visit => (
                                                 <Collapsible asChild key={visit.id}>
                                                     <TableBody>
-                                                        <CollapsibleTrigger asChild className="group">
+                                                        <CollapsibleTrigger asChild>
                                                             <TableRow className="cursor-pointer">
                                                                 <TableCell className="p-2 align-top text-xs">
                                                                     <div className="lg:hidden">
@@ -127,13 +126,13 @@ export function AnalyticsModal({ shortId }: { shortId: string }) {
                                                                         {format(new Date(visit.visitedAt), 'MMM d, yyyy, p')}
                                                                     </div>
                                                                 </TableCell>
-                                                                <TableCell className="p-2 text-xs"><code className="block break-all">{getVisitorPrimaryInfo(visit).ip}</code></TableCell>
-                                                                <TableCell className="hidden lg:table-cell p-2 text-xs">{getVisitorPrimaryInfo(visit).country}</TableCell>
+                                                                <TableCell className="hidden md:table-cell p-2 text-xs">{getVisitorPrimaryInfo(visit).country}</TableCell>
                                                                 <TableCell className="hidden lg:table-cell p-2 text-xs">{getVisitorPrimaryInfo(visit).region}</TableCell>
                                                                 <TableCell className="p-2 text-xs truncate">
                                                                     {getVisitorPrimaryInfo(visit).os}
                                                                 </TableCell>
                                                                 <TableCell className="hidden lg:table-cell p-2 text-xs">{getVisitorPrimaryInfo(visit).battery}</TableCell>
+                                                                <TableCell className="p-2 text-xs"><code className="block break-all">{getVisitorPrimaryInfo(visit).ip}</code></TableCell>
                                                             </TableRow>
                                                         </CollapsibleTrigger>
                                                         <CollapsibleContent asChild>

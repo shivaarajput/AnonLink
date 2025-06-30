@@ -1,4 +1,3 @@
-
 'use client';
 
 import { format } from 'date-fns';
@@ -46,12 +45,12 @@ export function DetailedAnalytics({ link, visits }: DetailedAnalyticsProps) {
                 <Table className="table-fixed w-full">
                     <TableHeader>
                         <TableRow>
-                            <TableHead className="px-2 w-[25%] lg:w-[20%]">Datetime</TableHead>
-                            <TableHead className="px-2 w-[40%] lg:w-[25%]">IP Address</TableHead>
-                            <TableHead className="hidden lg:table-cell px-2 lg:w-[12%]">Country</TableHead>
-                            <TableHead className="hidden lg:table-cell px-2 lg:w-[13%]">Region</TableHead>
-                            <TableHead className="px-2 w-[35%] lg:w-[15%]">OS</TableHead>
-                            <TableHead className="hidden lg:table-cell px-2 lg:w-[15%]">Battery</TableHead>
+                            <TableHead className="p-2 w-[18%]">Datetime</TableHead>
+                            <TableHead className="hidden md:table-cell p-2 w-[15%]">Country</TableHead>
+                            <TableHead className="hidden lg:table-cell p-2 w-[15%]">Region</TableHead>
+                            <TableHead className="p-2 w-[15%]">OS</TableHead>
+                            <TableHead className="hidden lg:table-cell p-2 w-[12%]">Battery</TableHead>
+                            <TableHead className="p-2 w-[25%]">IP Address</TableHead>
                         </TableRow>
                     </TableHeader>
                     {visits.length > 0 ? (
@@ -69,13 +68,13 @@ export function DetailedAnalytics({ link, visits }: DetailedAnalyticsProps) {
                                                     {format(new Date(visit.visitedAt), 'MMM d, yyyy, p')}
                                                 </div>
                                             </TableCell>
-                                            <TableCell className="p-2 text-xs"><code className="block break-all">{getVisitorPrimaryInfo(visit).ip}</code></TableCell>
-                                            <TableCell className="hidden lg:table-cell p-2 text-xs">{getVisitorPrimaryInfo(visit).country}</TableCell>
+                                            <TableCell className="hidden md:table-cell p-2 text-xs">{getVisitorPrimaryInfo(visit).country}</TableCell>
                                             <TableCell className="hidden lg:table-cell p-2 text-xs">{getVisitorPrimaryInfo(visit).region}</TableCell>
                                             <TableCell className="p-2 text-xs truncate">
                                                 {getVisitorPrimaryInfo(visit).os}
                                             </TableCell>
                                             <TableCell className="hidden lg:table-cell p-2 text-xs">{getVisitorPrimaryInfo(visit).battery}</TableCell>
+                                            <TableCell className="p-2 text-xs"><code className="block break-all">{getVisitorPrimaryInfo(visit).ip}</code></TableCell>
                                         </TableRow>
                                     </CollapsibleTrigger>
                                     <CollapsibleContent asChild>
