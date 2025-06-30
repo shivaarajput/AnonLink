@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState } from 'react';
@@ -19,6 +18,26 @@ const formSchema = z.object({
   url: z.string().url({ message: "Please enter a valid URL." }),
 });
 
+// A helper function to add a timeout to a promise
+function withTimeout<T>(promise: Promise<T>, ms: number): Promise<T> {
+  return new Promise((resolve, reject) => {
+    const timeoutId = setTimeout(() => {
+      reject(new Error(`The operation timed out. This is often caused by incorrect Firebase project setup. Please ensure your Firestore security rules allow writes to the 'links' collection and that your API keys in '.env.local' are correct.`));
+    }, ms);
+
+    promise.then(
+      (res) => {
+        clearTimeout(timeoutId);
+        resolve(res);
+      },
+      (err) => {
+        clearTimeout(timeoutId);
+        reject(err);
+      }
+    );
+  });
+}
+
 export default function Home() {
   const [shortenedUrl, setShortenedUrl] = useState<string | null>(null);
   const [isCopied, setIsCopied] = useState(false);
@@ -38,7 +57,7 @@ export default function Home() {
       const token = getAnonymousToken();
       const { hash: fingerprint, data: fingerprintData } = await getFingerprint();
       
-      const result = await createShortLink(values.url, token, fingerprint, fingerprintData);
+      const result = await withTimeout(createShortLink(values.url, token, fingerprint, fingerprintData), 10000); // 10 second timeout
 
       if (result.error) {
         toast({
@@ -54,10 +73,10 @@ export default function Home() {
           description: 'Your URL has been shortened.',
         });
       }
-    } catch (error) {
+    } catch (error: any) {
       toast({
         title: 'Error',
-        description: 'An unexpected error occurred. Please try again.',
+        description: error.message || 'An unexpected error occurred. Please try again.',
         variant: 'destructive',
       });
     }
