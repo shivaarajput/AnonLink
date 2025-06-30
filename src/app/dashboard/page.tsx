@@ -5,7 +5,7 @@ import { useEffect, useState, useMemo } from 'react';
 import { User, onAuthStateChanged, signOut } from 'firebase/auth';
 import { auth, db } from '@/lib/firebase';
 import { checkIsAdmin } from '@/lib/auth';
-import { getLinkAnalytics } from '@/lib/actions';
+import { getLinkAnalytics, deleteLink } from '@/lib/actions';
 import { getAnonymousToken } from '@/lib/store';
 import { LinkData, Visit } from '@/lib/types';
 import { useRouter } from 'next/navigation';
@@ -20,12 +20,24 @@ import {
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
-import { Clipboard, Check, ExternalLink, ChevronDown, ChevronUp, LogOut, Loader2, User as UserIcon, Shield } from 'lucide-react';
+import { Clipboard, Check, ExternalLink, ChevronDown, ChevronUp, LogOut, Loader2, User as UserIcon, Shield, Trash2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { format } from 'date-fns';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { DetailedAnalytics } from '@/components/dashboard/DetailedAnalytics';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from '@/components/ui/alert-dialog';
+import { QrCodeModal } from '@/components/dashboard/QrCodeModal';
 
 type AnalyticsCache = Record<string, { link: LinkData; visits: Visit[] }>;
 
@@ -37,7 +49,6 @@ export default function DashboardPage() {
   const [links, setLinks] = useState<LinkData[]>([]);
   const [linksLoading, setLinksLoading] = useState(true);
   
-  // States for expanding links and caching analytics
   const [expandedLinkId, setExpandedLinkId] = useState<string | null>(null);
   const [analyticsCache, setAnalyticsCache] = useState<AnalyticsCache>({});
   const [loadingAnalyticsId, setLoadingAnalyticsId] = useState<string | null>(null);
@@ -46,6 +57,9 @@ export default function DashboardPage() {
   const { toast } = useToast();
   const router = useRouter();
   
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [linkToDelete, setLinkToDelete] = useState<LinkData | null>(null);
+
   const origin = useMemo(() => typeof window !== 'undefined' ? window.location.origin : '', []);
 
   useEffect(() => {
@@ -115,11 +129,10 @@ export default function DashboardPage() {
   
     setExpandedLinkId(docId);
   
-    // Check if the data is already in cache AND if it's stale
     const isStale = analyticsCache[docId] && analyticsCache[docId].link.clicks !== clicks;
   
     if (analyticsCache[docId] && !isStale) {
-      return; // Use cached data
+      return;
     }
   
     setLoadingAnalyticsId(docId);
@@ -151,7 +164,6 @@ export default function DashboardPage() {
     }
   };
 
-
   const handleCopy = (e: React.MouseEvent, shortId: string) => {
     e.stopPropagation();
     const url = `${origin}/${shortId}`;
@@ -163,6 +175,32 @@ export default function DashboardPage() {
   const handleSignOut = async () => {
     await signOut(auth);
     router.push('/');
+  };
+
+  const handleDeleteClick = (e: React.MouseEvent, link: LinkData) => {
+    e.stopPropagation();
+    setLinkToDelete(link);
+  };
+
+  const handleConfirmDelete = async () => {
+    if (!linkToDelete) return;
+
+    setIsDeleting(true);
+    try {
+      const token = isAdmin ? undefined : getAnonymousToken();
+      const result = await deleteLink(linkToDelete.id, linkToDelete.shortId, isAdmin, token);
+      
+      if (result.success) {
+        toast({ title: "Link deleted successfully!" });
+      } else {
+        toast({ title: "Error", description: result.error, variant: "destructive" });
+      }
+    } catch (error) {
+      toast({ title: "Error", description: "Failed to delete link.", variant: "destructive" });
+    } finally {
+      setIsDeleting(false);
+      setLinkToDelete(null);
+    }
   };
 
   const pageTitle = isAdmin ? "Admin Dashboard" : "My Links";
@@ -199,16 +237,16 @@ export default function DashboardPage() {
       </CardHeader>
       <CardContent className="p-0 sm:p-2">
         <div className="rounded-md border">
-          <Table className="table-fixed">
+          <Table className="table-fixed w-full">
             <TableHeader>
               <TableRow>
                 <TableHead className="w-[50px]"></TableHead>
-                <TableHead className="w-[40%] lg:w-[25%]">Short Link</TableHead>
-                <TableHead className="hidden lg:table-cell w-[40%]">Original URL</TableHead>
+                <TableHead>Short Link</TableHead>
+                <TableHead className="hidden lg:table-cell">Original URL</TableHead>
                 <TableHead className="text-center w-[70px]">Clicks</TableHead>
                 {isAdmin && <TableHead className="hidden md:table-cell w-[150px]">Creator Token</TableHead>}
                 <TableHead className="hidden sm:table-cell text-center w-[120px]">Created</TableHead>
-                <TableHead className="text-right w-[80px]">Actions</TableHead>
+                <TableHead className="text-right w-[150px]">Actions</TableHead>
               </TableRow>
             </TableHeader>
             
@@ -246,9 +284,19 @@ export default function DashboardPage() {
                         {isAdmin && <TableCell className="hidden md:table-cell truncate"><code className="text-xs bg-muted p-1 rounded">{link.anonymousToken}</code></TableCell>}
                         <TableCell className="hidden sm:table-cell text-center text-muted-foreground">{format(new Date(link.createdAt), 'MMM d, yyyy')}</TableCell>
                         <TableCell className="text-right">
-                          <Button variant="ghost" size="icon" onClick={(e) => handleCopy(e, link.shortId)} aria-label="Copy link">
-                            {copiedLink === link.shortId ? <Check className="h-4 w-4 text-green-600" /> : <Clipboard className="h-4 w-4" />}
-                          </Button>
+                           <div className="flex items-center justify-end gap-0.5">
+                              <QrCodeModal url={`${origin}/${link.shortId}`} shortId={link.shortId} />
+                              <Button variant="ghost" size="icon" className="h-8 w-8" onClick={(e) => handleCopy(e, link.shortId)} aria-label="Copy link">
+                                {copiedLink === link.shortId ? <Check className="h-4 w-4 text-green-600" /> : <Clipboard className="h-4 w-4" />}
+                              </Button>
+                              <AlertDialog open={linkToDelete?.id === link.id} onOpenChange={(open) => !open && setLinkToDelete(null)}>
+                                  <AlertDialogTrigger asChild>
+                                      <Button variant="ghost" size="icon" className="text-destructive hover:text-destructive h-8 w-8" onClick={(e) => handleDeleteClick(e, link)}>
+                                          <Trash2 className="h-4 w-4" />
+                                      </Button>
+                                  </AlertDialogTrigger>
+                              </AlertDialog>
+                           </div>
                         </TableCell>
                     </TableRow>
                     <CollapsibleContent asChild>
@@ -280,6 +328,25 @@ export default function DashboardPage() {
             )}
           </Table>
         </div>
+        {linkToDelete && (
+             <AlertDialog open={!!linkToDelete} onOpenChange={(open) => !open && setLinkToDelete(null)}>
+                <AlertDialogContent>
+                    <AlertDialogHeader>
+                        <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+                        <AlertDialogDescription>
+                            This action cannot be undone. This will permanently delete the link <span className="font-semibold text-foreground">{origin}/{linkToDelete.shortId}</span> and all its associated analytics data.
+                        </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                        <AlertDialogCancel>Cancel</AlertDialogCancel>
+                        <AlertDialogAction onClick={handleConfirmDelete} disabled={isDeleting} className="bg-destructive hover:bg-destructive/90 text-destructive-foreground">
+                            {isDeleting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                            Delete
+                        </AlertDialogAction>
+                    </AlertDialogFooter>
+                </AlertDialogContent>
+            </AlertDialog>
+        )}
       </CardContent>
     </Card>
   );

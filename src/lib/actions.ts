@@ -12,6 +12,8 @@ import {
   increment,
   writeBatch,
   QueryConstraint,
+  getDoc,
+  deleteDoc,
 } from 'firebase/firestore';
 import { db } from './firebase';
 import { LinkData, Visit } from './types';
@@ -207,4 +209,48 @@ export async function getLinkAnalytics(shortId: string, anonymousToken?: string)
         console.error(`Error fetching analytics for ${shortId}:`, error);
         return { link: null, visits: [] };
     }
+}
+
+
+export async function deleteLink(
+  docId: string,
+  shortId: string,
+  isUserAdmin: boolean,
+  anonymousToken?: string
+): Promise<{ success: boolean; error?: string }> {
+  try {
+    const linkDocRef = doc(db, 'links', docId);
+    const linkDoc = await getDoc(linkDocRef);
+
+    if (!linkDoc.exists()) {
+      return { success: false, error: 'Link not found.' };
+    }
+
+    const linkData = linkDoc.data();
+
+    // Authorization check
+    if (!isUserAdmin && linkData.anonymousToken !== anonymousToken) {
+      return { success: false, error: 'Permission denied.' };
+    }
+
+    const batch = writeBatch(db);
+
+    // 1. Delete associated analytics
+    const analyticsQuery = query(collection(db, 'analytics'), where('shortId', '==', shortId));
+    const analyticsSnapshot = await getDocs(analyticsQuery);
+    analyticsSnapshot.forEach((doc) => {
+      batch.delete(doc.ref);
+    });
+
+    // 2. Delete the link itself
+    batch.delete(linkDocRef);
+
+    await batch.commit();
+
+    revalidatePath('/dashboard');
+    return { success: true };
+  } catch (error) {
+    console.error('Error deleting link:', error);
+    return { success: false, error: getFirebaseErrorMessage(error) };
+  }
 }
