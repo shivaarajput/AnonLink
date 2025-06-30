@@ -106,51 +106,48 @@ export default function DashboardPage() {
   }, [isAdmin, authLoading, toast]);
 
   const handleToggleExpand = async (isOpen: boolean, link: LinkData) => {
-    const { id: docId, shortId, clicks } = link;
-
+    const { id: docId, clicks } = link;
+  
     if (!isOpen) {
       setExpandedLinkId(null);
       return;
     }
-
-    // From here, isOpen is true, so we are expanding the row.
+  
     setExpandedLinkId(docId);
-
-    // Check if we need to refetch data because it's stale (click count mismatch).
+  
+    // Check if the data is already in cache AND if it's stale
     const isStale = analyticsCache[docId] && analyticsCache[docId].link.clicks !== clicks;
-
-    // If we have data and it's not stale, do nothing more.
+  
     if (analyticsCache[docId] && !isStale) {
-      return;
+      return; // Use cached data
     }
-    
-    // If we don't have the data, or if it's stale, fetch it.
-    setLoadingAnalyticsId(docId); // Show loading indicator
-
+  
+    setLoadingAnalyticsId(docId);
+  
     try {
       let analyticsData;
       if (isAdmin) {
-        analyticsData = await getLinkAnalytics(shortId);
+        analyticsData = await getLinkAnalytics(link.shortId);
       } else {
         const token = getAnonymousToken();
-        analyticsData = await getLinkAnalytics(shortId, token);
+        analyticsData = await getLinkAnalytics(link.shortId, token);
       }
-      
+  
       if (analyticsData.link) {
         setAnalyticsCache(prevCache => ({
           ...prevCache,
-          [docId]: analyticsData
+          [docId]: analyticsData,
         }));
       } else {
         toast({ title: 'Error', description: 'Could not fetch link details.', variant: 'destructive' });
-        setExpandedLinkId(null); // Collapse if fetch fails
+        setExpandedLinkId(null);
       }
     } catch (error) {
-        console.error("Error fetching analytics:", error);
-        toast({ title: 'Error', description: 'Could not fetch analytics data.', variant: 'destructive' });
-        setExpandedLinkId(null); // Collapse on error
+      console.error("Error fetching analytics:", error);
+      toast({ title: 'Error', description: 'Could not fetch analytics data.', variant: 'destructive' });
+      setExpandedLinkId(null);
     } finally {
-        setLoadingAnalyticsId(null);
+      setLoadingAnalyticsId(null);
     }
   };
 
@@ -207,10 +204,10 @@ export default function DashboardPage() {
             <TableHeader>
               <TableRow>
                 <TableHead className="w-[50px]"></TableHead>
-                <TableHead className="w-full sm:w-auto">Short Link</TableHead>
-                <TableHead className="hidden lg:table-cell">Original URL</TableHead>
+                <TableHead>Short Link</TableHead>
+                <TableHead className="hidden lg:table-cell w-[300px]">Original URL</TableHead>
                 <TableHead className="text-center w-[70px]">Clicks</TableHead>
-                {isAdmin && <TableHead className="hidden md:table-cell w-[15%]">Creator Token</TableHead>}
+                {isAdmin && <TableHead className="hidden md:table-cell w-[150px]">Creator Token</TableHead>}
                 <TableHead className="hidden sm:table-cell text-center w-[120px]">Created</TableHead>
                 <TableHead className="text-right w-[80px]">Actions</TableHead>
               </TableRow>
@@ -237,17 +234,17 @@ export default function DashboardPage() {
                               </Button>
                            </CollapsibleTrigger>
                         </TableCell>
-                        <TableCell className="font-medium max-w-[200px] truncate">
-                            <a href={`/${link.shortId}`} onClick={(e) => e.stopPropagation()} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline flex items-center gap-1.5">
+                        <TableCell className="font-medium">
+                            <a href={`/${link.shortId}`} onClick={(e) => e.stopPropagation()} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline flex items-center gap-1.5 min-w-0">
                                 <span className="truncate">
                                     {`${origin.replace(/https?:\/\//, '')}/${link.shortId}`}
                                 </span>
                                 <ExternalLink className="h-3 w-3 shrink-0" />
                             </a>
                         </TableCell>
-                        <TableCell className="hidden lg:table-cell max-w-[300px] truncate">{link.longUrl}</TableCell>
+                        <TableCell className="hidden lg:table-cell truncate">{link.longUrl}</TableCell>
                         <TableCell className="text-center font-semibold">{link.clicks}</TableCell>
-                        {isAdmin && <TableCell className="hidden md:table-cell max-w-[150px] truncate"><code className="text-xs bg-muted p-1 rounded">{link.anonymousToken}</code></TableCell>}
+                        {isAdmin && <TableCell className="hidden md:table-cell truncate"><code className="text-xs bg-muted p-1 rounded">{link.anonymousToken}</code></TableCell>}
                         <TableCell className="hidden sm:table-cell text-center text-muted-foreground">{format(new Date(link.createdAt), 'MMM d, yyyy')}</TableCell>
                         <TableCell className="text-right">
                           <Button variant="ghost" size="icon" onClick={(e) => handleCopy(e, link.shortId)} aria-label="Copy link">
