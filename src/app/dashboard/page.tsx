@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useEffect, useState, useMemo } from 'react';
@@ -26,11 +27,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { DetailedAnalytics } from '@/components/dashboard/DetailedAnalytics';
 
-type ExpandedLinkState = {
-  id: string;
-  data: { link: LinkData; visits: Visit[] } | null;
-  loading: boolean;
-};
+type AnalyticsCache = Record<string, { link: LinkData; visits: Visit[] }>;
 
 export default function DashboardPage() {
   const [user, setUser] = useState<User | null>(null);
@@ -39,7 +36,11 @@ export default function DashboardPage() {
   
   const [links, setLinks] = useState<LinkData[]>([]);
   const [linksLoading, setLinksLoading] = useState(true);
-  const [expandedLink, setExpandedLink] = useState<ExpandedLinkState | null>(null);
+  
+  // States for expanding links and caching analytics
+  const [expandedLinkId, setExpandedLinkId] = useState<string | null>(null);
+  const [analyticsCache, setAnalyticsCache] = useState<AnalyticsCache>({});
+  const [loadingAnalyticsId, setLoadingAnalyticsId] = useState<string | null>(null);
 
   const [copiedLink, setCopiedLink] = useState<string | null>(null);
   const { toast } = useToast();
@@ -104,27 +105,55 @@ export default function DashboardPage() {
     return () => unsubscribe();
   }, [isAdmin, authLoading, toast]);
 
-  const handleToggleExpand = async (shortId: string, docId: string) => {
-    if (expandedLink?.id === docId) {
-      setExpandedLink(null);
-    } else {
-      setExpandedLink({ id: docId, data: null, loading: true });
+  const handleToggleExpand = async (isOpen: boolean, link: LinkData) => {
+    const { id: docId, shortId, clicks } = link;
+
+    if (!isOpen) {
+      setExpandedLinkId(null);
+      return;
+    }
+
+    // From here, isOpen is true, so we are expanding the row.
+    setExpandedLinkId(docId);
+
+    // Check if we need to refetch data because it's stale (click count mismatch).
+    const isStale = analyticsCache[docId] && analyticsCache[docId].link.clicks !== clicks;
+
+    // If we have data and it's not stale, do nothing more.
+    if (analyticsCache[docId] && !isStale) {
+      return;
+    }
+    
+    // If we don't have the data, or if it's stale, fetch it.
+    setLoadingAnalyticsId(docId); // Show loading indicator
+
+    try {
       let analyticsData;
       if (isAdmin) {
-          analyticsData = await getLinkAnalytics(shortId);
+        analyticsData = await getLinkAnalytics(shortId);
       } else {
-          const token = getAnonymousToken();
-          analyticsData = await getLinkAnalytics(shortId, token);
+        const token = getAnonymousToken();
+        analyticsData = await getLinkAnalytics(shortId, token);
       }
       
       if (analyticsData.link) {
-        setExpandedLink({ id: docId, data: analyticsData, loading: false });
+        setAnalyticsCache(prevCache => ({
+          ...prevCache,
+          [docId]: analyticsData
+        }));
       } else {
         toast({ title: 'Error', description: 'Could not fetch link details.', variant: 'destructive' });
-        setExpandedLink(null);
+        setExpandedLinkId(null); // Collapse if fetch fails
       }
+    } catch (error) {
+        console.error("Error fetching analytics:", error);
+        toast({ title: 'Error', description: 'Could not fetch analytics data.', variant: 'destructive' });
+        setExpandedLinkId(null); // Collapse on error
+    } finally {
+        setLoadingAnalyticsId(null);
     }
   };
+
 
   const handleCopy = (e: React.MouseEvent, shortId: string) => {
     e.stopPropagation();
@@ -172,16 +201,16 @@ export default function DashboardPage() {
           </div>
         )}
       </CardHeader>
-      <CardContent className="p-2 pt-0 sm:p-4 sm:pt-0">
+      <CardContent className="p-0 sm:p-2">
         <div className="rounded-md border">
-          <Table className="table-fixed">
+          <Table>
             <TableHeader>
               <TableRow>
                 <TableHead className="w-[50px]"></TableHead>
-                <TableHead className="w-full">Short Link</TableHead>
-                <TableHead className="hidden lg:table-cell w-full">Original URL</TableHead>
+                <TableHead className="w-full sm:w-auto">Short Link</TableHead>
+                <TableHead className="hidden lg:table-cell">Original URL</TableHead>
                 <TableHead className="text-center w-[70px]">Clicks</TableHead>
-                {isAdmin && <TableHead className="hidden md:table-cell">Creator Token</TableHead>}
+                {isAdmin && <TableHead className="hidden md:table-cell w-[15%]">Creator Token</TableHead>}
                 <TableHead className="hidden sm:table-cell text-center w-[120px]">Created</TableHead>
                 <TableHead className="text-right w-[80px]">Actions</TableHead>
               </TableRow>
@@ -197,43 +226,46 @@ export default function DashboardPage() {
               </TableBody>
             ) : links.length > 0 ? (
               links.map(link => (
-                <Collapsible asChild key={link.id} open={expandedLink?.id === link.id} onOpenChange={() => handleToggleExpand(link.shortId, link.id)}>
+                <Collapsible asChild key={link.id} open={expandedLinkId === link.id} onOpenChange={(isOpen) => handleToggleExpand(isOpen, link)}>
                   <TableBody>
-                    <CollapsibleTrigger asChild>
-                        <TableRow className="cursor-pointer hover:bg-muted/50 data-[state=open]:bg-muted/50">
-                            <TableCell>
-                              {expandedLink?.id === link.id ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
-                            </TableCell>
-                            <TableCell className="font-medium">
-                                <a href={`/${link.shortId}`} onClick={(e) => e.stopPropagation()} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline flex items-center gap-1.5">
-                                    <div className="truncate">
-                                        {`${origin.replace(/https?:\/\//, '')}/${link.shortId}`}
-                                    </div>
-                                    <ExternalLink className="h-3 w-3 shrink-0" />
-                                </a>
-                            </TableCell>
-                            <TableCell className="hidden lg:table-cell break-all">{link.longUrl}</TableCell>
-                            <TableCell className="text-center font-semibold">{link.clicks}</TableCell>
-                            {isAdmin && <TableCell className="hidden md:table-cell"><code className="text-xs bg-muted p-1 rounded break-all">{link.anonymousToken.substring(0, 13)}...</code></TableCell>}
-                            <TableCell className="hidden sm:table-cell text-center text-muted-foreground">{format(new Date(link.createdAt), 'MMM d, yyyy')}</TableCell>
-                            <TableCell className="text-right">
-                              <Button variant="ghost" size="icon" onClick={(e) => handleCopy(e, link.shortId)} aria-label="Copy link">
-                                {copiedLink === link.shortId ? <Check className="h-4 w-4 text-green-600" /> : <Clipboard className="h-4 w-4" />}
+                     <TableRow className="data-[state=open]:bg-muted/50" data-state={expandedLinkId === link.id ? 'open' : 'closed'}>
+                        <TableCell>
+                           <CollapsibleTrigger asChild>
+                              <Button variant="ghost" size="icon" className="h-8 w-8">
+                                {expandedLinkId === link.id ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+                                <span className="sr-only">Toggle details</span>
                               </Button>
-                            </TableCell>
-                        </TableRow>
-                    </CollapsibleTrigger>
+                           </CollapsibleTrigger>
+                        </TableCell>
+                        <TableCell className="font-medium max-w-[200px] truncate">
+                            <a href={`/${link.shortId}`} onClick={(e) => e.stopPropagation()} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline flex items-center gap-1.5">
+                                <span className="truncate">
+                                    {`${origin.replace(/https?:\/\//, '')}/${link.shortId}`}
+                                </span>
+                                <ExternalLink className="h-3 w-3 shrink-0" />
+                            </a>
+                        </TableCell>
+                        <TableCell className="hidden lg:table-cell max-w-[300px] truncate">{link.longUrl}</TableCell>
+                        <TableCell className="text-center font-semibold">{link.clicks}</TableCell>
+                        {isAdmin && <TableCell className="hidden md:table-cell max-w-[150px] truncate"><code className="text-xs bg-muted p-1 rounded">{link.anonymousToken}</code></TableCell>}
+                        <TableCell className="hidden sm:table-cell text-center text-muted-foreground">{format(new Date(link.createdAt), 'MMM d, yyyy')}</TableCell>
+                        <TableCell className="text-right">
+                          <Button variant="ghost" size="icon" onClick={(e) => handleCopy(e, link.shortId)} aria-label="Copy link">
+                            {copiedLink === link.shortId ? <Check className="h-4 w-4 text-green-600" /> : <Clipboard className="h-4 w-4" />}
+                          </Button>
+                        </TableCell>
+                    </TableRow>
                     <CollapsibleContent asChild>
                         <TableRow className="bg-background">
                             <TableCell colSpan={isAdmin ? 7 : 6} className="p-0">
-                                {expandedLink?.loading && expandedLink.id === link.id && (
+                                {loadingAnalyticsId === link.id && (
                                   <div className="flex items-center justify-center p-8 gap-2">
                                     <Loader2 className="h-5 w-5 animate-spin" />
                                     <span className="text-muted-foreground">Loading Analytics...</span>
                                   </div>
                                 )}
-                                {expandedLink?.data && expandedLink.id === link.id && (
-                                  <DetailedAnalytics link={expandedLink.data.link} visits={expandedLink.data.visits} />
+                                {analyticsCache[link.id] && expandedLinkId === link.id && (
+                                  <DetailedAnalytics link={analyticsCache[link.id].link} visits={analyticsCache[link.id].visits} />
                                 )}
                             </TableCell>
                         </TableRow>
