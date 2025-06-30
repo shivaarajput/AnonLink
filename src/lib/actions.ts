@@ -143,10 +143,13 @@ export async function getLinksByToken(anonymousToken: string): Promise<LinkData[
 
     try {
         const linksRef = collection(db, 'links');
-        const q = query(linksRef, where('anonymousToken', '==', anonymousToken), orderBy('createdAt', 'desc'));
-
+        // Remove order by to avoid needing a composite index, which is likely the issue for anonymous users.
+        const q = query(linksRef, where('anonymousToken', '==', anonymousToken));
         const querySnapshot = await getDocs(q);
         const links = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as LinkData));
+
+        // Sort on the client-side instead
+        links.sort((a, b) => b.createdAt - a.createdAt);
 
         return links;
     } catch (error) {

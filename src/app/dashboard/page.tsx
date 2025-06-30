@@ -80,14 +80,14 @@ export default function DashboardPage() {
     fetchLinks();
   }, [isAdmin, authLoading]);
 
-  const handleToggleExpand = async (linkId: string) => {
-    if (expandedLink?.id === linkId) {
+  const handleToggleExpand = async (shortId: string, docId: string) => {
+    if (expandedLink?.id === docId) {
       setExpandedLink(null);
     } else {
-      setExpandedLink({ id: linkId, data: null, loading: true });
-      const analyticsData = await getLinkAnalytics(linkId);
+      setExpandedLink({ id: docId, data: null, loading: true });
+      const analyticsData = await getLinkAnalytics(shortId);
       if (analyticsData.link) {
-        setExpandedLink({ id: linkId, data: analyticsData, loading: false });
+        setExpandedLink({ id: docId, data: analyticsData, loading: false });
       } else {
         toast({ title: 'Error', description: 'Could not fetch link details.', variant: 'destructive' });
         setExpandedLink(null);
@@ -164,7 +164,7 @@ export default function DashboardPage() {
                 ))
               ) : links.length > 0 ? (
                 links.map(link => (
-                  <Collapsible asChild key={link.id} open={expandedLink?.id === link.id} onOpenChange={() => handleToggleExpand(link.id)}>
+                  <Collapsible asChild key={link.id} open={expandedLink?.id === link.id} onOpenChange={() => handleToggleExpand(link.shortId, link.id)}>
                     <>
                       <CollapsibleTrigger asChild>
                           <TableRow className="cursor-pointer hover:bg-muted/50 data-[state=open]:bg-muted/50">
