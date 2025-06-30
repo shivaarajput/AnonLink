@@ -37,29 +37,13 @@ const getHardwareData = async () => {
     };
   };
   
-  const getCanvasFingerprint = () => {
-    const canvas = document.createElement('canvas');
-    const ctx = canvas.getContext('2d');
-    if (!ctx) return 'Canvas not supported';
-
-    const text = "AnonLink_Fingerprint_ID_1.2.3-4567-890_!@#$%^&*()";
-    ctx.textBaseline = 'top';
-    ctx.font = "14px 'Arial'";
-    ctx.textBaseline = 'alphabetic';
-    ctx.fillStyle = '#f60';
-    ctx.fillRect(125, 1, 62, 20);
-    ctx.fillStyle = '#069';
-    ctx.fillText(text, 2, 15);
-    ctx.fillStyle = 'rgba(102, 204, 0, 0.7)';
-    ctx.fillText(text, 4, 17);
-    
-    return canvas.toDataURL();
-  };
-  
-  const getAudioFingerprint = () => new Promise((resolve) => {
+  const getAudioFingerprint = () => new Promise<string>((resolve) => {
     try {
         const AudioContext = window.OfflineAudioContext || (window as any).webkitOfflineAudioContext;
-        if (!AudioContext) return resolve('AudioContext not supported');
+        if (!AudioContext) {
+            resolve('AudioContext not supported');
+            return;
+        }
 
         const context = new AudioContext(1, 44100, 44100);
         const oscillator = context.createOscillator();
@@ -96,7 +80,6 @@ const getHardwareData = async () => {
     cpuCores: await safeGet(() => navigator.hardwareConcurrency),
     deviceMemory: await safeGet(() => (navigator as any).deviceMemory || 'N/A'),
     battery: await safeGet(getBattery),
-    canvasSignature: await safeGet(getCanvasFingerprint),
     audioSignature: await safeGet(getAudioFingerprint),
   };
 };
@@ -125,7 +108,10 @@ const getNetworkData = async () => {
 
   const getLocalIp = () => new Promise<string>((resolve) => {
     const RTCPeerConnection = window.RTCPeerConnection || (window as any).mozRTCPeerConnection || (window as any).webkitRTCPeerConnection;
-    if (!RTCPeerConnection) return resolve('WebRTC not supported');
+    if (!RTCPeerConnection) {
+        resolve('WebRTC not supported');
+        return;
+    }
     
     let resolved = false;
     const conn = new RTCPeerConnection({ iceServers: [] });
@@ -174,14 +160,15 @@ const getSoftwareData = async () => {
       return Array.from(navigator.plugins).map(p => ({name: p.name, filename: p.filename, description: p.description}));
     };
     
-    const getFonts = () => new Promise((resolve) => {
+    const getFonts = () => new Promise<string[] | string>((resolve) => {
         const fontList = [
             'Arial', 'Verdana', 'Helvetica', 'Times New Roman', 'Courier New', 'Georgia', 'Garamond', 
             'Comic Sans MS', 'Trebuchet MS', 'Impact', 'Segoe UI', 'Calibri', 'Candara', 'Menlo'
         ];
         
         if (typeof (document as any).fonts?.check !== 'function') {
-           return resolve('Font checking not supported');
+           resolve('Font checking not supported');
+           return;
         }
 
         try {
@@ -248,12 +235,14 @@ export const getFingerprint = async (): Promise<{ hash: string, data: any }> => 
     return { hash: 'server', data: { type: 'server' } };
   }
 
-  const data = {
-    hardware: await getHardwareData(),
-    network: await getNetworkData(),
-    software: await getSoftwareData(),
-    display: await getDisplayData(),
-  };
+  const [hardware, network, software, display] = await Promise.all([
+    getHardwareData(),
+    getNetworkData(),
+    getSoftwareData(),
+    getDisplayData(),
+  ]);
+
+  const data = { hardware, network, software, display };
 
   const jsonString = JSON.stringify(data, Object.keys(data).sort());
   const hashBuffer = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(jsonString));
