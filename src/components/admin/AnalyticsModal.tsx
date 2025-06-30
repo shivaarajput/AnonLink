@@ -107,48 +107,42 @@ export function AnalyticsModal({ shortId }: { shortId: string }) {
                                 </AccordionTrigger>
                                 <AccordionContent>
                                     <div className="rounded-md border">
-                                        <Table className="table-fixed w-full">
+                                        <Table className="w-full">
                                             <TableHeader>
                                                 <TableRow>
-                                                    <TableHead className="p-2 w-[18%]">Datetime</TableHead>
-                                                    <TableHead className="hidden sm:table-cell p-2 w-[15%]">Country</TableHead>
-                                                    <TableHead className="hidden md:table-cell p-2 w-[15%]">Region</TableHead>
-                                                    <TableHead className="p-2 w-[15%]">OS</TableHead>
-                                                    <TableHead className="hidden md:table-cell p-2 w-[12%]">Battery</TableHead>
-                                                    <TableHead className="p-2 w-[25%]">IP Address</TableHead>
+                                                    <TableHead className="p-2 w-[35%] sm:w-[25%] lg:w-[18%]">Datetime</TableHead>
+                                                    <TableHead className="p-2 hidden sm:table-cell sm:w-[15%]">Country</TableHead>
+                                                    <TableHead className="p-2 hidden md:table-cell md:w-[15%]">Region</TableHead>
+                                                    <TableHead className="p-2 w-[35%] sm:w-[25%] lg:w-[15%]">OS</TableHead>
+                                                    <TableHead className="p-2 hidden md:table-cell md:w-[12%]">Battery</TableHead>
+                                                    <TableHead className="p-2 w-[30%] sm:w-[35%] lg:w-auto">IP Address</TableHead>
                                                 </TableRow>
                                             </TableHeader>
                                             {analytics.visits.length > 0 ? analytics.visits.map(visit => (
                                                 <Collapsible asChild key={visit.id}>
                                                     <TableBody>
-                                                        <CollapsibleTrigger asChild>
-                                                            <TableRow className="cursor-pointer group hover:bg-muted/50 data-[state=open]:bg-muted/50">
+                                                        <TableRow className="cursor-pointer group hover:bg-muted/50 data-[state=open]:bg-muted/50" data-state="closed">
+                                                            <CollapsibleTrigger asChild>
                                                                 <TableCell colSpan={6} className="p-0">
                                                                     <div className="flex w-full items-start">
-                                                                        {/* Datetime */}
-                                                                        <div className="p-2 text-xs align-top basis-1/3 sm:basis-auto sm:w-[18%]">
-                                                                            <span className="hidden lg:inline">{format(new Date(visit.visitedAt), 'MMM d, yyyy, p')}</span>
+                                                                        <div className="p-2 text-xs align-top basis-1/3 sm:basis-auto w-[35%] sm:w-[25%] lg:w-[18%]">
+                                                                            <span className="hidden lg:inline whitespace-nowrap">{format(new Date(visit.visitedAt), 'MMM d, yyyy, p')}</span>
                                                                             <div className="lg:hidden">
                                                                                 <div>{format(new Date(visit.visitedAt), 'MMM d, yy')}</div>
                                                                                 <div className="text-muted-foreground">{format(new Date(visit.visitedAt), 'p')}</div>
                                                                             </div>
                                                                         </div>
-                                                                        {/* Country */}
                                                                         <div className="hidden sm:flex p-2 text-xs align-top w-[15%]">{getVisitorPrimaryInfo(visit).country}</div>
-                                                                        {/* Region */}
                                                                         <div className="hidden md:flex p-2 text-xs align-top w-[15%]">{getVisitorPrimaryInfo(visit).region}</div>
-                                                                        {/* OS */}
-                                                                        <div className="flex p-2 text-xs align-top truncate basis-1/3 sm:basis-auto sm:w-[15%]">{getVisitorPrimaryInfo(visit).os}</div>
-                                                                        {/* Battery */}
+                                                                        <div className="flex p-2 text-xs align-top truncate basis-1/3 sm:basis-auto w-[35%] sm:w-[25%] lg:w-[15%]">{getVisitorPrimaryInfo(visit).os}</div>
                                                                         <div className="hidden md:flex p-2 text-xs align-top w-[12%]">{getVisitorPrimaryInfo(visit).battery}</div>
-                                                                        {/* IP Address */}
-                                                                        <div className="flex p-2 text-xs align-top basis-1/3 sm:basis-auto sm:w-[25%]">
+                                                                        <div className="flex p-2 text-xs align-top basis-1/3 sm:basis-auto w-[30%] sm:w-[35%] lg:w-auto">
                                                                             <code className="block break-all">{getVisitorPrimaryInfo(visit).ip}</code>
                                                                         </div>
                                                                     </div>
                                                                 </TableCell>
-                                                            </TableRow>
-                                                        </CollapsibleTrigger>
+                                                            </CollapsibleTrigger>
+                                                        </TableRow>
                                                         <CollapsibleContent asChild>
                                                             <TableRow>
                                                                 <TableCell colSpan={6} className="p-0">
