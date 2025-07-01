@@ -160,6 +160,9 @@ export async function getLongUrl(shortId: string): Promise<string | null> {
         const linkData = linkDoc.data() as Omit<LinkData, 'id'>;
 
         if (linkData.expiresAt && linkData.expiresAt < Date.now()) {
+            // "Just-in-time" deletion of expired links upon visit
+            await deleteLink(linkDoc.id, linkData.shortId, true); // Use admin rights to delete system-wide
+            revalidatePath('/dashboard');
             return null;
         }
 
@@ -286,10 +289,11 @@ export async function cleanupExpiredLinks(
     if (isUserAdmin) {
       linksToScanQuery = query(collection(db, 'links'), where('expiresAt', '<', now));
     } else if (anonymousToken) {
+      // For non-admins, we query only by their token to avoid needing a composite index.
+      // Expired links will be filtered from the results in the next step.
       linksToScanQuery = query(
         collection(db, 'links'),
-        where('anonymousToken', '==', anonymousToken),
-        where('expiresAt', '<', now)
+        where('anonymousToken', '==', anonymousToken)
       );
     } else {
       return { deletedCount: 0 };
@@ -304,7 +308,22 @@ export async function cleanupExpiredLinks(
     const batch = writeBatch(db);
     let deletedCount = 0;
 
-    for (const linkDoc of snapshot.docs) {
+    // Filter the documents that are actually expired
+    const docsToDelete = snapshot.docs.filter(doc => {
+        if (isUserAdmin) {
+            // The admin query is already pre-filtered by Firestore
+            return true;
+        }
+        // For non-admins, we perform the check in code
+        const data = doc.data();
+        return data.expiresAt && data.expiresAt < now;
+    });
+
+    if (docsToDelete.length === 0) {
+        return { deletedCount: 0 };
+    }
+
+    for (const linkDoc of docsToDelete) {
       const linkData = linkDoc.data();
       const shortId = linkData.shortId;
 
