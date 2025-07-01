@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useRouter } from 'next/navigation';
@@ -13,6 +12,10 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '
 import { useToast } from '@/hooks/use-toast';
 import { createShortLink } from '@/lib/actions';
 import { getAnonymousToken } from '@/lib/store';
+import { useEffect, useState } from 'react';
+import { onAuthStateChanged } from 'firebase/auth';
+import { auth } from '@/lib/firebase';
+import { checkIsAdmin } from '@/lib/auth';
 
 const formSchema = z.object({
   url: z.string().url({ message: "Please enter a valid URL." }),
@@ -41,6 +44,21 @@ function withTimeout<T>(promise: Promise<T>, ms: number): Promise<T> {
 export default function Home() {
   const { toast } = useToast();
   const router = useRouter();
+  const [isAdmin, setIsAdmin] = useState(false);
+  const [authChecked, setAuthChecked] = useState(false);
+
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, async (user) => {
+      if (user) {
+        const adminStatus = await checkIsAdmin(user);
+        setIsAdmin(adminStatus);
+      } else {
+        setIsAdmin(false);
+      }
+      setAuthChecked(true);
+    });
+    return () => unsubscribe();
+  }, []);
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -53,7 +71,7 @@ export default function Home() {
     try {
       const token = getAnonymousToken();
       
-      const result = await withTimeout(createShortLink(values.url, token), 10000); // 10 second timeout
+      const result = await withTimeout(createShortLink(values.url, token, isAdmin), 10000); // 10 second timeout
 
       if (result.error) {
         toast({
@@ -104,8 +122,8 @@ export default function Home() {
                   </FormItem>
                 )}
               />
-              <Button type="submit" className="w-full h-12 text-lg" disabled={form.formState.isSubmitting}>
-                {form.formState.isSubmitting ? (
+              <Button type="submit" className="w-full h-12 text-lg" disabled={form.formState.isSubmitting || !authChecked}>
+                {form.formState.isSubmitting || !authChecked ? (
                   <Loader2 className="mr-2 h-5 w-5 animate-spin" />
                 ) : (
                   <LinkIcon className="mr-2 h-5 w-5" />

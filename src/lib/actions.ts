@@ -1,4 +1,3 @@
-
 'use server';
 
 import {
@@ -53,19 +52,22 @@ async function isShortIdUnique(shortId: string): Promise<boolean> {
 
 export async function createShortLink(
   longUrl: string,
-  anonymousToken: string
+  anonymousToken: string,
+  isAdmin: boolean = false
 ): Promise<{ shortId?: string; error?: string }> {
   try {
     if (!longUrl || !anonymousToken) {
       return { error: 'Missing required data.' };
     }
 
-    const userLinksQuery = query(collection(db, 'links'), where('anonymousToken', '==', anonymousToken));
-    const userLinksSnapshot = await getDocs(userLinksQuery);
-    const linkCount = userLinksSnapshot.size;
+    if (!isAdmin) {
+      const userLinksQuery = query(collection(db, 'links'), where('anonymousToken', '==', anonymousToken));
+      const userLinksSnapshot = await getDocs(userLinksQuery);
+      const linkCount = userLinksSnapshot.size;
 
-    if (linkCount >= 3) {
-      return { error: 'You have reached the limit of 3 URLs. Please delete an existing link from the dashboard to create a new one.' };
+      if (linkCount >= 3) {
+        return { error: 'You have reached the limit of 3 URLs. Please delete an existing link from the dashboard to create a new one.' };
+      }
     }
     
     let shortId = generateShortId();
