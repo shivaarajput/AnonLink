@@ -24,7 +24,7 @@ const formSchema = z.object({
 export default function AdminLoginPage() {
   const router = useRouter();
   const { toast } = useToast();
-  const [loading, setLoading] = useState(true);
+  const [isVerifying, setIsVerifying] = useState(true);
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
@@ -34,10 +34,10 @@ export default function AdminLoginPage() {
           router.replace('/dashboard');
         } else {
           await auth.signOut();
-          setLoading(false);
+          setIsVerifying(false);
         }
       } else {
-        setLoading(false);
+        setIsVerifying(false);
       }
     });
     return () => unsubscribe();
@@ -68,14 +68,7 @@ export default function AdminLoginPage() {
     }
   };
   
-  if (loading) {
-    return (
-        <div className="flex flex-col items-center justify-center min-h-[60vh]">
-            <Loader2 className="h-12 w-12 animate-spin text-primary" />
-            <p className="mt-4 text-muted-foreground">Verifying session...</p>
-        </div>
-    );
-  }
+  const isProcessing = form.formState.isSubmitting || isVerifying;
 
   return (
     <div className="flex items-center justify-center min-h-[70vh]">
@@ -93,7 +86,7 @@ export default function AdminLoginPage() {
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Email</FormLabel>
-                    <FormControl><Input placeholder="admin@example.com" {...field} /></FormControl>
+                    <FormControl><Input placeholder="admin@example.com" {...field} disabled={isProcessing} /></FormControl>
                     <FormMessage />
                   </FormItem>
                 )}
@@ -104,18 +97,18 @@ export default function AdminLoginPage() {
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Password</FormLabel>
-                    <FormControl><Input type="password" {...field} /></FormControl>
+                    <FormControl><Input type="password" {...field} disabled={isProcessing} /></FormControl>
                     <FormMessage />
                   </FormItem>
                 )}
               />
-              <Button type="submit" className="w-full" disabled={form.formState.isSubmitting}>
-                {form.formState.isSubmitting ? (
+              <Button type="submit" className="w-full" disabled={isProcessing}>
+                {isProcessing ? (
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                 ) : (
                     <LogIn className="mr-2 h-4 w-4" />
                 )}
-                Log In
+                {isVerifying ? 'Verifying Session...' : 'Log In'}
               </Button>
             </form>
           </Form>
