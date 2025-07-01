@@ -67,7 +67,6 @@ export async function createShortLink(
       
       const activeLinks = userLinksSnapshot.docs.filter(doc => {
           const linkData = doc.data() as Omit<LinkData, 'id'>;
-          // Active if it doesn't have an expiry or the expiry is in the future
           return !linkData.expiresAt || linkData.expiresAt > Date.now();
       });
 
@@ -98,7 +97,6 @@ export async function createShortLink(
     };
 
     if (!isAdmin) {
-      // Set expiration for 30 days for non-admin users
       newLink.expiresAt = Date.now() + 30 * 24 * 60 * 60 * 1000;
     }
 
@@ -162,23 +160,6 @@ export async function getLongUrl(shortId: string): Promise<string | null> {
         const linkData = linkDoc.data() as Omit<LinkData, 'id'>;
 
         if (linkData.expiresAt && linkData.expiresAt < Date.now()) {
-            // Link has expired. Delete it and its analytics data.
-            const batch = writeBatch(db);
-
-            // 1. Delete associated analytics
-            const analyticsQuery = query(collection(db, 'analytics'), where('shortId', '==', shortId));
-            const analyticsSnapshot = await getDocs(analyticsQuery);
-            analyticsSnapshot.forEach((analyticsDoc) => {
-              batch.delete(analyticsDoc.ref);
-            });
-
-            // 2. Delete the link itself
-            batch.delete(linkDoc.ref);
-
-            await batch.commit();
-            
-            // Revalidate dashboard path to reflect the deletion
-            revalidatePath('/dashboard');
             return null;
         }
 
@@ -234,20 +215,16 @@ export async function getLinkAnalytics(shortId: string, anonymousToken?: string)
         const linkDoc = linkSnapshot.docs[0];
         const linkData = { id: linkDoc.id, ...linkDoc.data() } as LinkData;
 
-        // If an anonymous token is provided (meaning it's not an admin),
-        // verify it matches the link's token for security.
         if (anonymousToken && linkData.anonymousToken !== anonymousToken) {
             console.warn(`Permission denied: token mismatch for shortId ${shortId}. Access denied.`);
             return { link: null, visits: [] };
         }
         
-        // Simplified query for analytics to avoid needing a composite index.
         const visitsQuery = query(collection(db, 'analytics'), where('shortId', '==', shortId));
         const visitsSnapshot = await getDocs(visitsQuery);
         
         const visits = visitsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Visit));
 
-        // Sort the results in code instead of in the query.
         visits.sort((a, b) => b.visitedAt - a.visitedAt);
 
         return { link: linkData, visits };
@@ -274,21 +251,18 @@ export async function deleteLink(
 
     const linkData = linkDoc.data();
 
-    // Authorization check
     if (!isUserAdmin && linkData.anonymousToken !== anonymousToken) {
       return { success: false, error: 'Permission denied.' };
     }
 
     const batch = writeBatch(db);
 
-    // 1. Delete associated analytics
     const analyticsQuery = query(collection(db, 'analytics'), where('shortId', '==', shortId));
     const analyticsSnapshot = await getDocs(analyticsQuery);
     analyticsSnapshot.forEach((doc) => {
       batch.delete(doc.ref);
     });
 
-    // 2. Delete the link itself
     batch.delete(linkDocRef);
 
     await batch.commit();
@@ -298,5 +272,61 @@ export async function deleteLink(
   } catch (error) {
     console.error('Error deleting link:', error);
     return { success: false, error: getFirebaseErrorMessage(error) };
+  }
+}
+
+export async function cleanupExpiredLinks(
+  isUserAdmin: boolean,
+  anonymousToken?: string
+): Promise<{ deletedCount: number; error?: string }> {
+  try {
+    const now = Date.now();
+    let linksToScanQuery;
+
+    if (isUserAdmin) {
+      linksToScanQuery = query(collection(db, 'links'), where('expiresAt', '<', now));
+    } else if (anonymousToken) {
+      linksToScanQuery = query(
+        collection(db, 'links'),
+        where('anonymousToken', '==', anonymousToken),
+        where('expiresAt', '<', now)
+      );
+    } else {
+      return { deletedCount: 0 };
+    }
+
+    const snapshot = await getDocs(linksToScanQuery);
+
+    if (snapshot.empty) {
+      return { deletedCount: 0 };
+    }
+
+    const batch = writeBatch(db);
+    let deletedCount = 0;
+
+    for (const linkDoc of snapshot.docs) {
+      const linkData = linkDoc.data();
+      const shortId = linkData.shortId;
+
+      if (shortId) {
+        const analyticsQuery = query(collection(db, 'analytics'), where('shortId', '==', shortId));
+        const analyticsSnapshot = await getDocs(analyticsQuery);
+        analyticsSnapshot.forEach((analyticsDoc) => {
+          batch.delete(analyticsDoc.ref);
+        });
+      }
+      batch.delete(linkDoc.ref);
+      deletedCount++;
+    }
+
+    if (deletedCount > 0) {
+      await batch.commit();
+      revalidatePath('/dashboard');
+    }
+
+    return { deletedCount };
+  } catch (error) {
+    console.error('Error cleaning up expired links:', error);
+    return { deletedCount: 0, error: getFirebaseErrorMessage(error) };
   }
 }

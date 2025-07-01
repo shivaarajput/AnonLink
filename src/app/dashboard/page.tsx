@@ -5,7 +5,7 @@ import { useEffect, useState, useMemo } from 'react';
 import { User, onAuthStateChanged, signOut } from 'firebase/auth';
 import { auth, db } from '@/lib/firebase';
 import { checkIsAdmin } from '@/lib/auth';
-import { getLinkAnalytics, deleteLink } from '@/lib/actions';
+import { getLinkAnalytics, deleteLink, cleanupExpiredLinks } from '@/lib/actions';
 import { getAnonymousToken } from '@/lib/store';
 import { LinkData, Visit } from '@/lib/types';
 import { useRouter } from 'next/navigation';
@@ -76,6 +76,28 @@ export default function DashboardPage() {
     });
     return () => unsubscribe();
   }, []);
+
+  useEffect(() => {
+    if (authLoading) return;
+
+    const runCleanup = async () => {
+      try {
+        const token = isAdmin ? undefined : getAnonymousToken();
+        if (!isAdmin && !token) return;
+
+        const { deletedCount, error } = await cleanupExpiredLinks(isAdmin, token);
+
+        if (error) {
+          toast({ title: 'Cleanup Error', description: error, variant: 'destructive' });
+        } else if (deletedCount > 0) {
+          toast({ title: 'Housekeeping', description: `${deletedCount} expired link(s) were deleted.` });
+        }
+      } catch (error) {
+        console.error('Failed to run cleanup task:', error);
+      }
+    };
+    runCleanup();
+  }, [isAdmin, authLoading, toast]);
 
   useEffect(() => {
     if (authLoading) return;
