@@ -63,10 +63,15 @@ export async function createShortLink(
     if (!isAdmin) {
       const userLinksQuery = query(collection(db, 'links'), where('anonymousToken', '==', anonymousToken));
       const userLinksSnapshot = await getDocs(userLinksQuery);
-      const linkCount = userLinksSnapshot.size;
+      
+      const activeLinks = userLinksSnapshot.docs.filter(doc => {
+          const linkData = doc.data() as Omit<LinkData, 'id'>;
+          // Active if it doesn't have an expiry or the expiry is in the future
+          return !linkData.expiresAt || linkData.expiresAt > Date.now();
+      });
 
-      if (linkCount >= 3) {
-        return { error: 'You have reached the limit of 3 URLs. Please delete an existing link from the dashboard to create a new one.' };
+      if (activeLinks.length >= 3) {
+        return { error: 'You have reached the limit of 3 active URLs. Please delete an existing link from the dashboard to create a new one.' };
       }
     }
     
