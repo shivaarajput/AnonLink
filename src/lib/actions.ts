@@ -59,6 +59,14 @@ export async function createShortLink(
     if (!longUrl || !anonymousToken) {
       return { error: 'Missing required data.' };
     }
+
+    const userLinksQuery = query(collection(db, 'links'), where('anonymousToken', '==', anonymousToken));
+    const userLinksSnapshot = await getDocs(userLinksQuery);
+    const linkCount = userLinksSnapshot.size;
+
+    if (linkCount >= 3) {
+      return { error: 'You have reached the limit of 3 URLs. Please delete an existing link from the dashboard to create a new one.' };
+    }
     
     let shortId = generateShortId();
     let unique = await isShortIdUnique(shortId);
