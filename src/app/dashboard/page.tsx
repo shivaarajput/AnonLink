@@ -51,7 +51,6 @@ export default function DashboardPage() {
   
   const [expandedLinkId, setExpandedLinkId] = useState<string | null>(null);
   const [analyticsCache, setAnalyticsCache] = useState<AnalyticsCache>({});
-  const [loadingAnalyticsId, setLoadingAnalyticsId] = useState<string | null>(null);
 
   const [copiedLink, setCopiedLink] = useState<string | null>(null);
   const { toast } = useToast();
@@ -130,37 +129,32 @@ export default function DashboardPage() {
     setExpandedLinkId(docId);
   
     const isStale = analyticsCache[docId] && analyticsCache[docId].link.clicks !== clicks;
+    const shouldFetch = !analyticsCache[docId] || isStale;
   
-    if (analyticsCache[docId] && !isStale) {
-      return;
-    }
+    if (shouldFetch) {
+      try {
+        let analyticsData;
+        if (isAdmin) {
+          analyticsData = await getLinkAnalytics(link.shortId);
+        } else {
+          const token = getAnonymousToken();
+          analyticsData = await getLinkAnalytics(link.shortId, token);
+        }
   
-    setLoadingAnalyticsId(docId);
-  
-    try {
-      let analyticsData;
-      if (isAdmin) {
-        analyticsData = await getLinkAnalytics(link.shortId);
-      } else {
-        const token = getAnonymousToken();
-        analyticsData = await getLinkAnalytics(link.shortId, token);
-      }
-  
-      if (analyticsData.link) {
-        setAnalyticsCache(prevCache => ({
-          ...prevCache,
-          [docId]: analyticsData,
-        }));
-      } else {
-        toast({ title: 'Error', description: 'Could not fetch link details.', variant: 'destructive' });
+        if (analyticsData.link) {
+          setAnalyticsCache(prevCache => ({
+            ...prevCache,
+            [docId]: analyticsData,
+          }));
+        } else {
+          toast({ title: 'Error', description: 'Could not fetch link details.', variant: 'destructive' });
+          setExpandedLinkId(null);
+        }
+      } catch (error) {
+        console.error("Error fetching analytics:", error);
+        toast({ title: 'Error', description: 'Could not fetch analytics data.', variant: 'destructive' });
         setExpandedLinkId(null);
       }
-    } catch (error) {
-      console.error("Error fetching analytics:", error);
-      toast({ title: 'Error', description: 'Could not fetch analytics data.', variant: 'destructive' });
-      setExpandedLinkId(null);
-    } finally {
-      setLoadingAnalyticsId(null);
     }
   };
 
@@ -308,12 +302,6 @@ export default function DashboardPage() {
                     <CollapsibleContent asChild>
                         <TableRow className="bg-background">
                             <TableCell colSpan={isAdmin ? 8 : 7} className="p-0">
-                                {loadingAnalyticsId === link.id && (
-                                  <div className="flex items-center justify-center p-8 gap-2">
-                                    <Loader2 className="h-5 w-5 animate-spin" />
-                                    <span className="text-muted-foreground">Loading Analytics...</span>
-                                  </div>
-                                )}
                                 {analyticsCache[link.id] && expandedLinkId === link.id && (
                                   <DetailedAnalytics link={analyticsCache[link.id].link} visits={analyticsCache[link.id].visits} />
                                 )}

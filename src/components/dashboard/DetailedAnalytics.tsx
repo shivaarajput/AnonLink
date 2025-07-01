@@ -1,6 +1,7 @@
 
 'use client';
 
+import { useState, useEffect } from 'react';
 import { format } from 'date-fns';
 import { LinkData, Visit } from '@/lib/types';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
@@ -14,6 +15,24 @@ interface DetailedAnalyticsProps {
 }
 
 export function DetailedAnalytics({ link, visits }: DetailedAnalyticsProps) {
+    const [displayedVisits, setDisplayedVisits] = useState<Visit[]>([]);
+
+    useEffect(() => {
+        setDisplayedVisits([]);
+        if (!visits || visits.length === 0) {
+            return;
+        }
+
+        const timeouts: NodeJS.Timeout[] = [];
+        visits.forEach((visit, index) => {
+            const timeout = setTimeout(() => {
+                setDisplayedVisits(prev => [...prev, visit]);
+            }, index * 50); // Stagger each row by 50ms
+            timeouts.push(timeout);
+        });
+
+        return () => timeouts.forEach(clearTimeout);
+    }, [visits]);
 
     const getVisitorPrimaryInfo = (visit: Visit) => {
         const data = visit.visitorData;
@@ -35,7 +54,7 @@ export function DetailedAnalytics({ link, visits }: DetailedAnalyticsProps) {
     return (
         <div className="p-2 sm:p-4 bg-muted/30">
             <h3 className="text-base font-semibold flex items-center gap-2 mb-2 px-2">
-                <Globe className="h-5 w-5 text-primary" /> Visitor Details ({visits.length} clicks)
+                <Globe className="h-5 w-5 text-primary" /> Visitor Details ({link.clicks} clicks)
             </h3>
             <div className="rounded-md border bg-card">
                 <Table className="w-full table-fixed">
@@ -52,8 +71,8 @@ export function DetailedAnalytics({ link, visits }: DetailedAnalyticsProps) {
                             <TableHead className="p-2 w-[30%] sm:w-[25%] md:w-[15%] lg:w-[20%]">IP Address</TableHead>
                         </TableRow>
                     </TableHeader>
-                    {visits.length > 0 ? (
-                        visits.map(visit => (
+                    {displayedVisits.length > 0 ? (
+                        displayedVisits.map(visit => (
                             <Collapsible asChild key={visit.id}>
                                 <TableBody>
                                     <TableRow className="cursor-pointer group hover:bg-muted/50 data-[state=open]:bg-muted/50" data-state="closed">
@@ -91,7 +110,9 @@ export function DetailedAnalytics({ link, visits }: DetailedAnalyticsProps) {
                     ) : (
                         <TableBody>
                             <TableRow>
-                                <TableCell colSpan={6} className="text-center h-24 text-muted-foreground">No visits recorded yet.</TableCell>
+                                <TableCell colSpan={6} className="text-center h-24 text-muted-foreground">
+                                    {visits.length > 0 ? 'Loading visitor data...' : 'No visits recorded yet.'}
+                                </TableCell>
                             </TableRow>
                         </TableBody>
                     )}
