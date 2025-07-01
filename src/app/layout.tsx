@@ -29,6 +29,7 @@ export default function RootLayout({
           'min-h-screen bg-background antialiased',
           'font-body'
         )}
+        suppressHydrationWarning
       >
         <ThemeProvider
           attribute="class"
