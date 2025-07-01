@@ -1,3 +1,4 @@
+
 'use server';
 
 import {
@@ -157,10 +158,27 @@ export async function getLongUrl(shortId: string): Promise<string | null> {
             return null;
         }
         
-        const linkData = snapshot.docs[0].data() as Omit<LinkData, 'id'>;
+        const linkDoc = snapshot.docs[0];
+        const linkData = linkDoc.data() as Omit<LinkData, 'id'>;
 
         if (linkData.expiresAt && linkData.expiresAt < Date.now()) {
-            // Link has expired, treat as not found.
+            // Link has expired. Delete it and its analytics data.
+            const batch = writeBatch(db);
+
+            // 1. Delete associated analytics
+            const analyticsQuery = query(collection(db, 'analytics'), where('shortId', '==', shortId));
+            const analyticsSnapshot = await getDocs(analyticsQuery);
+            analyticsSnapshot.forEach((analyticsDoc) => {
+              batch.delete(analyticsDoc.ref);
+            });
+
+            // 2. Delete the link itself
+            batch.delete(linkDoc.ref);
+
+            await batch.commit();
+            
+            // Revalidate dashboard path to reflect the deletion
+            revalidatePath('/dashboard');
             return null;
         }
 
