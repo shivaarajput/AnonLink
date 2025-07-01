@@ -2,6 +2,7 @@
 'use client';
 
 import { useEffect, useState, useMemo } from 'react';
+import Link from 'next/link';
 import { User, onAuthStateChanged, signOut } from 'firebase/auth';
 import { auth, db } from '@/lib/firebase';
 import { checkIsAdmin } from '@/lib/auth';
@@ -20,7 +21,7 @@ import {
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
-import { Clipboard, Check, ExternalLink, ChevronDown, ChevronUp, LogOut, Loader2, User as UserIcon, Shield, Trash2 } from 'lucide-react';
+import { Clipboard, Check, ExternalLink, ChevronDown, ChevronUp, LogOut, Loader2, User as UserIcon, Shield, Trash2, PlusCircle } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { format, formatDistanceToNow } from 'date-fns';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -338,8 +339,16 @@ export default function DashboardPage() {
             ) : (
               <TableBody>
                 <TableRow>
-                  <TableCell colSpan={isAdmin ? 9 : 8} className="text-center h-24 text-muted-foreground">
-                    You haven't created any links yet.
+                  <TableCell colSpan={isAdmin ? 9 : 8} className="h-48">
+                    <div className="flex flex-col items-center justify-center gap-4 text-center">
+                      <p className="text-muted-foreground">You haven't created any links yet.</p>
+                      <Button asChild>
+                        <Link href="/">
+                          <PlusCircle className="mr-2 h-4 w-4" />
+                          Create your first link
+                        </Link>
+                      </Button>
+                    </div>
                   </TableCell>
                 </TableRow>
               </TableBody>
