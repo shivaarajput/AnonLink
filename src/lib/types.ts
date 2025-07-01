@@ -6,6 +6,7 @@ export interface LinkData {
   anonymousToken: string;
   createdAt: number;
   clicks: number;
+  expiresAt?: number;
 }
 
 export interface Visit {

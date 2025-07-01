@@ -22,7 +22,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Button } from '@/components/ui/button';
 import { Clipboard, Check, ExternalLink, ChevronDown, ChevronUp, LogOut, Loader2, User as UserIcon, Shield, Trash2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
-import { format } from 'date-fns';
+import { format, formatDistanceToNow } from 'date-fns';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { DetailedAnalytics } from '@/components/dashboard/DetailedAnalytics';
@@ -198,6 +198,16 @@ export default function DashboardPage() {
     }
   };
 
+  const getExpiryInfo = (link: LinkData) => {
+    if (!link.expiresAt) {
+      return <span className="text-green-600 font-medium">Never</span>;
+    }
+    if (link.expiresAt < Date.now()) {
+      return <span className="text-destructive">Expired</span>;
+    }
+    return `in ${formatDistanceToNow(new Date(link.expiresAt))}`;
+  };
+
   const pageTitle = isAdmin ? "Admin Dashboard" : "My Links";
   const pageDescription = isAdmin ? "View and manage all shortened links across the platform." : "Here are the links you've created. Click a link to see visitor analytics.";
 
@@ -241,6 +251,7 @@ export default function DashboardPage() {
                 <TableHead className="w-20 text-center">Clicks</TableHead>
                 {isAdmin && <TableHead className="hidden md:table-cell w-40">Creator Token</TableHead>}
                 <TableHead className="hidden sm:table-cell w-28 text-center">Created</TableHead>
+                <TableHead className="hidden sm:table-cell w-32 text-center">Expires</TableHead>
                 <TableHead className="hidden lg:table-cell w-24 text-center">QR Code</TableHead>
                 <TableHead className="w-24 text-right">Actions</TableHead>
               </TableRow>
@@ -250,7 +261,7 @@ export default function DashboardPage() {
               <TableBody>
                 {Array.from({ length: 3 }).map((_, i) => (
                   <TableRow key={i}>
-                    <TableCell colSpan={isAdmin ? 8 : 7}><Skeleton className="h-8 w-full" /></TableCell>
+                    <TableCell colSpan={isAdmin ? 9 : 8}><Skeleton className="h-8 w-full" /></TableCell>
                   </TableRow>
                 ))}
               </TableBody>
@@ -281,6 +292,7 @@ export default function DashboardPage() {
                         <TableCell className="text-center font-semibold">{link.clicks}</TableCell>
                         {isAdmin && <TableCell className="hidden md:table-cell"><code className="text-xs bg-muted p-1 rounded block truncate">{link.anonymousToken}</code></TableCell>}
                         <TableCell className="hidden sm:table-cell text-center text-muted-foreground">{format(new Date(link.createdAt), 'MMM d, yyyy')}</TableCell>
+                        <TableCell className="hidden sm:table-cell text-center text-muted-foreground text-xs">{getExpiryInfo(link)}</TableCell>
                         <TableCell className="hidden lg:table-cell text-center">
                           <QrCodeModal url={`${origin}/${link.shortId}`} shortId={link.shortId} />
                         </TableCell>
@@ -301,7 +313,7 @@ export default function DashboardPage() {
                     </TableRow>
                     <CollapsibleContent asChild>
                         <TableRow className="bg-background">
-                            <TableCell colSpan={isAdmin ? 8 : 7} className="p-0">
+                            <TableCell colSpan={isAdmin ? 9 : 8} className="p-0">
                                 {analyticsCache[link.id] && expandedLinkId === link.id && (
                                   <DetailedAnalytics link={analyticsCache[link.id].link} visits={analyticsCache[link.id].visits} />
                                 )}
@@ -314,7 +326,7 @@ export default function DashboardPage() {
             ) : (
               <TableBody>
                 <TableRow>
-                  <TableCell colSpan={isAdmin ? 8 : 7} className="text-center h-24 text-muted-foreground">
+                  <TableCell colSpan={isAdmin ? 9 : 8} className="text-center h-24 text-muted-foreground">
                     You haven't created any links yet.
                   </TableCell>
                 </TableRow>

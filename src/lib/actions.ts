@@ -91,6 +91,11 @@ export async function createShortLink(
       clicks: 0,
     };
 
+    if (!isAdmin) {
+      // Set expiration for 30 days for non-admin users
+      newLink.expiresAt = Date.now() + 30 * 24 * 60 * 60 * 1000;
+    }
+
     await addDoc(collection(db, 'links'), newLink);
     revalidatePath('/dashboard');
     return { shortId };
@@ -146,7 +151,15 @@ export async function getLongUrl(shortId: string): Promise<string | null> {
         if (snapshot.empty) {
             return null;
         }
-        return snapshot.docs[0].data().longUrl as string;
+        
+        const linkData = snapshot.docs[0].data() as Omit<LinkData, 'id'>;
+
+        if (linkData.expiresAt && linkData.expiresAt < Date.now()) {
+            // Link has expired, treat as not found.
+            return null;
+        }
+
+        return linkData.longUrl;
     } catch (error) {
         console.error(`Error fetching long URL for ${shortId}:`, error);
         return null;
