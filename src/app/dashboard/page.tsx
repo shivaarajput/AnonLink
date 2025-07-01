@@ -63,7 +63,6 @@ export default function DashboardPage() {
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
-      setAuthLoading(true);
       if (currentUser) {
         const adminStatus = await checkIsAdmin(currentUser);
         setUser(currentUser);
@@ -233,21 +232,12 @@ export default function DashboardPage() {
   const pageTitle = isAdmin ? "Admin Dashboard" : "My Links";
   const pageDescription = isAdmin ? "View and manage all shortened links across the platform." : "Here are the links you've created. Click a link to see visitor analytics.";
 
-  if (authLoading) {
-    return (
-      <div className="flex flex-col items-center justify-center min-h-[60vh]">
-        <Loader2 className="h-12 w-12 animate-spin text-primary" />
-        <p className="mt-4 text-muted-foreground">Verifying session...</p>
-      </div>
-    );
-  }
-
   return (
     <Card>
       <CardHeader className="flex flex-col md:flex-row md:items-start md:justify-between">
         <div>
           <CardTitle className="flex items-center gap-2">
-            {isAdmin ? <Shield /> : <UserIcon />}
+            {authLoading ? <Skeleton className="h-8 w-8 rounded-full" /> : (isAdmin ? <Shield /> : <UserIcon />)}
             {pageTitle}
           </CardTitle>
           <CardDescription>{pageDescription}</CardDescription>
@@ -279,7 +269,7 @@ export default function DashboardPage() {
               </TableRow>
             </TableHeader>
             
-            {linksLoading ? (
+            {linksLoading || authLoading ? (
               <TableBody>
                 {Array.from({ length: 3 }).map((_, i) => (
                   <TableRow key={i}>
