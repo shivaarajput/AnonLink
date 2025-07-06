@@ -6,10 +6,17 @@ import { Toaster } from '@/components/ui/toaster';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import { ThemeProvider } from '@/components/ThemeProvider';
+import LoaderOverlay from '@/components/LoaderOverlay';
 
 export const metadata: Metadata = {
   title: 'AnonLink - Anonymous URL Shortener',
   description: 'Create short, anonymous links without an account.',
+  openGraph: {
+    title: 'AnonLink - Anonymous URL Shortener',
+    description: 'Create short, anonymous links without an account.',
+    // Provide the absolute URL to your image
+    images: ['/image.png'], 
+  },
 };
 
 export default function RootLayout({
@@ -39,6 +46,7 @@ export default function RootLayout({
         >
           <div className="relative flex min-h-screen flex-col">
             <Header />
+            <LoaderOverlay />
             <main className="flex-1 container mx-auto px-4 py-8">{children}</main>
             <Footer />
           </div>
